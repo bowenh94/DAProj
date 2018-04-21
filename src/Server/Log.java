@@ -17,4 +17,9 @@ public class Log {
 	public void append(Entry e) {
 		this.linkedList.add(e);
 	}
+	
+	public int getLastTerm(){
+		Entry last = linkedList.getLast();
+		return last.getTerm();
+	}
 }

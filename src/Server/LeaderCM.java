@@ -21,4 +21,10 @@ public class LeaderCM extends ConsensusModule {
 		return 0;
 	}
 
+	@Override
+	protected void handleTimeout(int timerId) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

@@ -9,16 +9,19 @@ import javafx.util.Pair;
 
 public class DAServer {
 	public ArrayList<Pair<String,Integer>> serverList;
-
+	private int currentTerm;
+	
 	private int rmiPort=1099;
 	private int serverPort=8970;
 	private String configPath;
 	private String serverListPath;
 	private int serverNum;
-	private int currentTerm;
 	
-	public DAServer(int serverPort, int rmiPort, String configPath, String serverListPath) throws IOException {
-		// Construct a DA server, with port number, rmi register number and basic config. 
+	private int serverId;
+	
+	public DAServer(int serverId, int serverPort, int rmiPort, String configPath, String serverListPath) throws IOException {
+		// Construct a DA server, with port number, rmi register number and basic config.
+		this.serverId = serverId;
 		this.serverPort = serverPort;
 		this.rmiPort = rmiPort;
 		this.configPath = configPath;
@@ -78,8 +81,28 @@ public class DAServer {
 		}
 	}
 	
-	public void startServer() {
-		
-		ConsensusModule.startMode(new FollowerCM());
+	public int getCurrentTerm(){
+		return this.currentTerm;
+	}
+	
+	public int getServerNum(){
+		return this.serverNum;
+	}
+	
+	public int getServerId(){
+		return this.serverId;
+	}
+	
+	public boolean setCurrentTerm(int term){
+		if(term<=currentTerm)
+			return false;
+		this.currentTerm = term;
+		return true;
+	}
+	
+	public void startServer(){
+		RPCResponse.init(serverNum, currentTerm);
+		ConsensusModule.initCM(rmiPort, serverId, this);
+		RPCImpl.startMode(new FollowerCM());
 	}
 }

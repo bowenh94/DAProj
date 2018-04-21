@@ -19,11 +19,10 @@ public class ServerDemo {
 	private static String serverListPath = "src/configs/serverList.txt";
 	private static int serverPort = 8899;
 	private static int rmiPort = 1099; 
+	private static int serverId = 1;
 	
 	
 	public static void main(String[] args){
-		// generate servers from file of serverList
-		
 		
     	// Command line options: bootstrap
     	Options options = new Options();
@@ -32,7 +31,7 @@ public class ServerDemo {
 
 		DAServer daServer;
 		try {
-			daServer = new DAServer(serverPort, rmiPort, configPath, serverListPath);
+			daServer = new DAServer(serverId,serverPort, rmiPort, configPath, serverListPath);
 			daServer.startServer();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

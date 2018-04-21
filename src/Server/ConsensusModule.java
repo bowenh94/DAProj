@@ -1,34 +1,54 @@
 package Server;
 
 import java.rmi.Naming;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public abstract class ConsensusModule {
-	private Log log;
-	private StateMachine stateMachine;
-	protected static int mRmiPort;
+	protected static Log log;
+	protected static StateMachine stateMachine;
+	protected static int cmRmiPort;
+	protected static Object cmLock;
+	protected static int cmServerId;
+	protected static DAServer cmDAServer;
+	protected static int cmLastCommitId;
 	
 	/*
 	 * Election timeout bound
 	 */
-	protected final static int ELECTION_TIMEOUT_MIN=150;
-	protected final static int ELECTION_TIMEOUT_MAX=300;
+	protected final int ELECTION_TIMEOUT_MIN=150;
+	protected final int ELECTION_TIMEOUT_MAX=300;
 	/*
 	 * Heart-beat interval
 	 */
 	protected final static int HEARTBEAT_INTERVAL=75;
 	
-	public ConsensusModule() {
+	public static void initCM(int rmiPort, int serverId, DAServer daServer) {
 		// TODO Auto-generated constructor stub
-		this.log = new Log();
-		this.stateMachine = new StateMachine();
+		log = new Log();
+		stateMachine = new StateMachine();
+		cmLock = new Object();
+		cmRmiPort = rmiPort;
+		cmServerId = serverId;
+		cmDAServer = daServer;
+		cmLastCommitId = 0;
 	}
-
-	public static void startMode(ConsensusModule mode) {
-		mode.run();
+	
+	protected final Timer scheduleTimer(long millis, final int timerId){
+		Timer timer = new Timer();
+		TimerTask task = new TimerTask() {		
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				ConsensusModule.this.handleTimeout(timerId);
+			}
+		};
+		timer.schedule(task, millis);
+		return timer;
 	}
 
 	private final String getRmiUrl(int serverID) {
-		return "rmi://localhost:" + mRmiPort + "/S" + serverID;
+		return "rmi://localhost:" + cmRmiPort + "/S" + serverID;
 	}
 
 	/*
@@ -45,8 +65,13 @@ public abstract class ConsensusModule {
 					/*
 					 * Further implementation
 					 */
+					int response = rpc.requestVote(candidateTerm, candidateID, lastLogIndex, lastLogTerm);
+					synchronized (cmLock) {
+						RPCResponse.setVote(serverID, response, candidateTerm);
+					}
 				} catch (Exception e) {
 					// TODO: handle exception
+					e.printStackTrace();
 				}
 			}
 		}.start();
@@ -63,8 +88,13 @@ public abstract class ConsensusModule {
 					/*
 					 * Further implementation
 					 */
+					int response = rpc.appendEntries(leaderTerm, leaderID, prevLogIndex, prevLogTerm, entries, leaderCommit);
+					synchronized (cmLock) {
+						RPCResponse.setAppendEntryResp(serverID, response, leaderTerm);
+					}
 				} catch (Exception e) {
 					// TODO: handle exception
+					e.printStackTrace();
 				}
 			}
 		}.start();
@@ -75,10 +105,19 @@ public abstract class ConsensusModule {
 	 * abstract method for roles to use
 	 */
 	abstract protected void run();
-
+	
+	abstract protected void handleTimeout(int timerId);
+	
+	/*
+	 * Return current term if appendEntry fail 
+	 * else 0
+	 */
 	abstract public int appendEntries(int leaderTerm, int leaderID, int prevLogIndex, int prevLogTerm, Entry[] entries,
 			int leaderCommit);
-
+	/*
+	 * Return current term if not vote for cand
+	 * else 0
+	 */
 	abstract public int requestVote(int candidateTerm, int candidateID, int lastLogIndex, int lastLogTerm);
 
 }

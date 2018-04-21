@@ -11,16 +11,16 @@ public class Entry {
 		this.clientID = clientID;
 		this.clientVal = clientVal;
 	}
-	public int getEntry(Entry e) {
-		return entryID;
+	public int getEntry() {
+		return this.entryID;
 	}
-	public int  getTerm(Entry e) {
-		return term;
+	public int  getTerm() {
+		return this.term;
 	}
-	public int getClientID(Entry e){
-		return clientID;
+	public int getClientID(){
+		return this.clientID;
 	}
-	public int getCLientVal(Entry e) {
-		return clientVal;
+	public int getCLientVal() {
+		return this.clientVal;
 	}
 }

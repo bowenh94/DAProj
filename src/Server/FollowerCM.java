@@ -20,5 +20,11 @@ public class FollowerCM extends ConsensusModule{
 		// TODO Auto-generated method stub
 		return 0;
 	}
+
+	@Override
+	protected void handleTimeout(int timerId) {
+		// TODO Auto-generated method stub
+		
+	}
 	
 }

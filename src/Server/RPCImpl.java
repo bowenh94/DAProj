@@ -16,18 +16,23 @@ public class RPCImpl extends UnicastRemoteObject implements RPC {
 		super();
 	}
 	
+	public static void startMode(ConsensusModule cModule){
+		consensusModule = cModule;
+		cModule.run();
+	}
+	
 	@Override
 	public int appendEntries(int leaderTerm, int leaderID, int prevLogIndex, int prevLogTerm, Entry[] entries,
 			int leaderCommit) throws RemoteException {
 		// TODO Auto-generated method stub
-		return 0;
+		return consensusModule.appendEntries(leaderTerm, leaderID, prevLogIndex, prevLogTerm, entries, leaderCommit);
 	}
 
 	@Override
 	public int requestVote(int candidateTerm, int candidateID, int lastLogIndex, int lastLogTerm)
 			throws RemoteException {
 		// TODO Auto-generated method stub
-		return 0;
+		return consensusModule.requestVote(candidateTerm, candidateID, lastLogIndex, lastLogTerm);
 	}
 
 }
