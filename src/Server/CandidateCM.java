@@ -7,7 +7,7 @@ public class CandidateCM extends ConsensusModule {
 
 	private Timer electionTimeoutTimer;
 	// Timer id to distinguish two timer, they should have different approach to handle timeout 
-	private int TIMER_ID = 2;
+	private int TIMER_ID = 1;
 
 	@Override
 	protected void run() {
