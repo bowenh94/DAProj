@@ -2,8 +2,6 @@ package Server;
 
 import java.util.LinkedList;
 
-import javafx.util.Pair;
-
 public class Log {
 	private LinkedList<Entry> linkedList;
 

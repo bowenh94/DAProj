@@ -30,8 +30,15 @@ public class ServerDemo {
     	
     	
 
-		DAServer daServer = new DAServer(serverPort, rmiPort, configPath, serverListPath);
-		daServer.run();
+		DAServer daServer;
+		try {
+			daServer = new DAServer(serverPort, rmiPort, configPath, serverListPath);
+			daServer.startServer();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 	
 

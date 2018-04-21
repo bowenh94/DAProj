@@ -1,7 +1,6 @@
 package Server;
 
 import java.rmi.Naming;
-import java.rmi.Remote;
 
 public abstract class ConsensusModule {
 	private Log log;
@@ -38,6 +37,7 @@ public abstract class ConsensusModule {
 	protected final void remoteRequestVote(final int serverID, final int candidateTerm, final int candidateID,
 			final int lastLogIndex, final int lastLogTerm) {
 		new Thread() {
+			@Override
 			public void run() {
 				String url = getRmiUrl(serverID);
 				try {
@@ -55,6 +55,7 @@ public abstract class ConsensusModule {
 	protected final void remoteAppendEntries(final int serverID, final int leaderTerm, final int leaderID,
 			final int prevLogIndex, final int prevLogTerm, final Entry[] entries, final int leaderCommit) {
 		new Thread() {
+			@Override
 			public void run() {
 				String url = getRmiUrl(serverID);
 				try {
