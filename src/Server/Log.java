@@ -17,9 +17,23 @@ public class Log {
 	public void append(Entry e) {
 		this.linkedList.add(e);
 	}
-	
-	public int getLastTerm(){
+
+	public int getLastTerm() {
 		Entry last = linkedList.getLast();
 		return last.getTerm();
+	}
+
+	// @return index of last entry in log
+	public int getLastIndex() {
+		return (linkedList.size() - 1);
+	}
+
+	// @return entry at passed-in index, null if none
+	public Entry getEntry(int index) {
+		if ((index > -1) && (index < linkedList.size())) {
+			return linkedList.get(index);
+		}
+
+		return null;
 	}
 }
