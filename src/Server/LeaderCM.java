@@ -55,7 +55,6 @@ public class LeaderCM extends ConsensusModule {
 				latestMatchingIndex[j]--;
 
 				int[] responses = RPCResponse.getAppendEntryResp(cmDAServer.getCurrentTerm());
-				// might be off by one
 				response = responses[j];
 			}
 		}
