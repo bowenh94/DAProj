@@ -85,7 +85,7 @@ public class LeaderCM extends ConsensusModule {
 		// TODO Auto-generated method stub
 		synchronized (cmLock) {
 
-			int term = cmDAServer.getCurrentTerm();\
+			int term = cmDAServer.getCurrentTerm();
 			// Revert to follower if candidate has larger term than
 			// current leader
 			if (candidateTerm > term) {
