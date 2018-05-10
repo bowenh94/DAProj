@@ -13,6 +13,10 @@ public class Log {
 	public LinkedList<Entry> get() {
 		return this.linkedList;
 	}
+	
+	public void setLog(LinkedList<Entry> linkedList) {
+		this.linkedList = linkedList;
+	}
 
 	public void append(Entry e) {
 		this.linkedList.add(e);
