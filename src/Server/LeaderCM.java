@@ -17,7 +17,6 @@ public class LeaderCM extends ConsensusModule {
 			sendHeartbeats();
 			// start heart-beat timer
 			heartbeatTimer = scheduleTimer(HEARTBEAT_INTERVAL, TIMER_ID);
-			commitToStateMachine();
 		}
 	}
 
@@ -63,14 +62,12 @@ public class LeaderCM extends ConsensusModule {
 				majorityCommitCounter++;
 			}
 		}
+		
 		if (majorityCommitCounter > cmDAServer.getServerNum() / 2) {
 			cmLastCommitId++;
+			// TODO: commit
+			// stateMachine.executeLog(log, cmDAServer.serverSocket);
 		}
-	}
-
-	public int commitToStateMachine() {
-
-		return 0;
 	}
 
 	@Override
@@ -84,8 +81,10 @@ public class LeaderCM extends ConsensusModule {
 				RPCImpl.startMode(new FollowerCM());
 				return 0;
 			}
+			
 			// get rpc from itself
-			else if (leaderTerm == term && leaderID == cmDAServer.getServerId()) {
+			if (leaderID == cmDAServer.getServerId()) {
+				System.out.println("Received HEARTBEAT from myself");
 				return 0;
 			}
 
