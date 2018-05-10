@@ -26,11 +26,10 @@ public class DAClient extends JFrame {
 	private static final long serialVersionUID = 1L;
 	private Board board;
 	static private String serverListPath = "src/configs/serverList.txt";
-	public ArrayList<Pair<String, Integer>> serverList;
 	public int clientID;
+	private static int REFRESH_INTERVAL = 5;
 
 	public DAClient() {
-
 		board = new Board();
 		add(board);
 
@@ -43,81 +42,91 @@ public class DAClient extends JFrame {
 	}
 
 	public static void main(String[] args) {
+		DAClient client = new DAClient();
 
 		EventQueue.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				JFrame ex = new DAClient();
+				JFrame ex = client;
 				ex.setVisible(true);
 			}
 		});
 
-		new Thread() {
-			@Override
-			public void run() {
-				JSONObject jsonObject;
-				DataInputStream br = null;
-				DataOutputStream out = null;
-				Socket socket = null;
+		// Main thread: communicate with server
+		JSONObject jsonObject;
+		DataInputStream br = null;
+		DataOutputStream out = null;
+		Socket socket = null;
+		ArrayList<Pair<String, Integer>> serverList;
+		// read serverlist from file and store in serverlist
+		serverList = readServerList();
+
+		try {
+			// find one server is alive
+			for (int i = 0; i < serverList.size(); i++) {
+				Pair<String, Integer> firstServer = serverList.get(i);
 				try {
-					ArrayList<Pair<String, Integer>> serverList = new ArrayList<>();
-					// read serverlist from file and store in serverlist
-					serverList = readServerList();
-					Pair<String, Integer> firstServer = serverList.get(0);
-
 					socket = new Socket(firstServer.getKey(), firstServer.getValue());
-					out = new DataOutputStream(socket.getOutputStream());
-					PushbackInputStream pbi = new PushbackInputStream(socket.getInputStream());
-					br = new DataInputStream(pbi);
-
-					String msg = null;
-					int singlebyte;
-					if ((singlebyte = pbi.read()) != -1) {
-
-						pbi.unread(singlebyte);
-						msg = br.readUTF();
-
-						jsonObject = stringtoJSON(msg);
-						/*
-						 * Futher inplementation to send request to server
-						 */
-
-					}
-					// find Leader
-
-					while (true) {
-						Thread.sleep(5);
-
-					}
 				} catch (Exception e) {
-					e.printStackTrace();
-				} finally {
-
-					try {
-						if (socket != null)
-							socket.close();
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-					try {
-						if (br != null)
-							br.close();
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-					if (out != null) {
-						try {
-							out.close();
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					}
+					System.err.println("Server " + i + " is not exist!");
+					continue;
 				}
 			}
 
-		}.start();
+			if (socket == null) {
+				System.err.println("No server alive! Client is offline!");
+				return;
+			}
 
+			out = new DataOutputStream(socket.getOutputStream());
+			PushbackInputStream pbi = new PushbackInputStream(socket.getInputStream());
+			br = new DataInputStream(pbi);
+			String msg = null;
+
+			int singlebyte;
+			// get Leader information
+			if ((singlebyte = pbi.read()) != -1) {
+
+				pbi.unread(singlebyte);
+				msg = br.readUTF();
+
+				jsonObject = stringtoJSON(msg);
+				/*
+				 * TODO: Futher inplementation to send request to server
+				 */
+
+			}
+
+			// start to send socore and get leader board
+			while (true) {
+				Thread.sleep(REFRESH_INTERVAL);
+				// TODO: send msg to server
+				int score = client.board.getScore();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (socket != null)
+					socket.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			try {
+				if (br != null)
+					br.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			if (out != null) {
+				try {
+					out.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 
 	public static JSONObject stringtoJSON(String msg) {
@@ -134,7 +143,7 @@ public class DAClient extends JFrame {
 	}
 
 	// Read server list from file and store in serverList
-	static private ArrayList<Pair<String, Integer>> readServerList() {
+	private static ArrayList<Pair<String, Integer>> readServerList() {
 		ArrayList<Pair<String, Integer>> serverList = new ArrayList<>();
 		File file = new File(serverListPath);
 		BufferedReader bReader;
