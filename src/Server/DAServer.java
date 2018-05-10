@@ -145,7 +145,9 @@ public class DAServer {
 		RPCResponse.init(serverNum, currentTerm);
 		ConsensusModule.initCM(rmiPort, serverId, this);
 		RPCImpl RPCServer = new RPCImpl();
+		System.err.println("Server ready");
 		Naming.rebind(this.url, RPCServer);
+		System.err.println("Server ready");
 		RPCImpl.startMode(new FollowerCM());
 	}
 }
@@ -205,7 +207,7 @@ class Handler implements Runnable {
 					e.printStackTrace();
 				}
 			}
-		}
+		} 
 	}
 
 	public static JSONObject stringtoJSON(String msg) {
