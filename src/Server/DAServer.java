@@ -1,8 +1,11 @@
 package Server;
 
 import java.io.*;
+import java.net.MalformedURLException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.rmi.Naming;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -23,7 +26,7 @@ public class DAServer {
 	private String serverListPath;
 	private int serverNum;
 	private int serverId;
-
+	private String url;
 	private final int poolsize = 5;
 	private ExecutorService eService;
 
@@ -36,6 +39,7 @@ public class DAServer {
 		this.serverId = serverId;
 		this.serverPort = serverPort;
 		this.rmiPort = rmiPort;
+		this.url = "rmi://localhost:" + this.rmiPort + "/S" + this.serverId;
 		this.configPath = configPath;
 		this.serverListPath = serverListPath;
 		serverList = new ArrayList<>();
@@ -119,12 +123,12 @@ public class DAServer {
 		return true;
 	}
 
-	public void startServer() {
+	public void startServer() throws RemoteException, MalformedURLException {
 		new Thread() {
 			@Override
 			public void run() {
 				try {
-					serverSocket = new ServerSocket();
+					serverSocket = new ServerSocket(serverPort);
 					Socket socket = null;
 					while (true) {
 						socket = serverSocket.accept();
@@ -140,6 +144,8 @@ public class DAServer {
 		// initialize RPCResponse
 		RPCResponse.init(serverNum, currentTerm);
 		ConsensusModule.initCM(rmiPort, serverId, this);
+		RPCImpl RPCServer = new RPCImpl();
+		Naming.rebind(this.url, RPCServer);
 		RPCImpl.startMode(new FollowerCM());
 	}
 }

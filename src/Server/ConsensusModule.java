@@ -60,11 +60,9 @@ public abstract class ConsensusModule {
 			@Override
 			public void run() {
 				String url = getRmiUrl(serverID);
+				//System.out.println(url);
 				try {
 					RPC rpc = (RPC) Naming.lookup(url);
-					/*
-					 * Further implementation
-					 */
 					int response = rpc.requestVote(candidateTerm, candidateID, lastLogIndex, lastLogTerm);
 					synchronized (cmLock) {
 						RPCResponse.setVote(serverID, response, candidateTerm);
