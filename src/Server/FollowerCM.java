@@ -27,38 +27,21 @@ public class FollowerCM extends ConsensusModule {
 	public int appendEntries(int leaderTerm, int leaderID, int prevLogIndex, int prevLogTerm, Entry[] entries,
 			int leaderCommit) {
 		// TODO Auto-generated method stub
-		synchronized (cmLock) {
-			System.out.println("Server " + cmDAServer.getServerId());
+		synchronized(cmLock) {
 			this.resetTimeoutTimer();
 			int term = cmDAServer.getCurrentTerm();
 			if (leaderTerm >= term) {
 				cmDAServer.setCurrentTerm(term);
 			}
-			int termAtLastIndex = log.getLastTerm();
-			if (termAtLastIndex == prevLogTerm) {
-				if (prevLogIndex == (log.get().size() - 1)) {
-					for (Entry entry : entries) {
-						log.get().add(entry);
-					}
-				} else if (entries == null) {
-					return -1;
-				} else if ((prevLogIndex == -1)
-						|| ((log.getEntry(prevLogIndex) != null) && (log.getLastTerm() == prevLogTerm))) {
-					LinkedList<Entry> tmpEntries = new LinkedList<Entry>();
-					for (int i = 0; i <= prevLogIndex; i++) {
-						Entry entry = log.getEntry(i);
-						tmpEntries.add(entry);
-					}
-					for (Entry entry : entries) {
-						tmpEntries.add(entry);
-					}
-					log.setLog(tmpEntries);
-				} else {
-					return -1;
-				}
+			int termAtIndex = log.getEntry(prevLogIndex).getTerm();
+			if(termAtIndex == prevLogTerm) {
+				log.insert(entries, prevLogIndex, prevLogTerm);
+				return 0;
+			}
+			else {
+				return -1;
 			}
 		}
-		return log.get().size();
 	}
 
 	@Override
