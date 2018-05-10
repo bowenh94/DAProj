@@ -36,6 +36,7 @@ public class LeaderCM extends ConsensusModule {
 		// length to leader
 		Arrays.fill(latestMatchingIndex, log.getLastIndex());
 
+		int majorityCommitCounter = 0;
 		// iterate through servers
 		for (int j = 0; j < cmDAServer.getServerNum(); j++) {
 			int response = -1;
@@ -57,6 +58,15 @@ public class LeaderCM extends ConsensusModule {
 				int[] responses = RPCResponse.getAppendEntryResp(cmDAServer.getCurrentTerm());
 				response = responses[j];
 			}
+			if (latestMatchingIndex[j] >= cmLastCommitId) {
+				majorityCommitCounter++;
+			}
+		}
+		
+		if (majorityCommitCounter > cmDAServer.getServerNum() / 2) {
+			cmLastCommitId++;
+			// TODO: commit
+			// stateMachine.executeLog(log, cmDAServer.serverSocket);
 		}
 	}
 
@@ -71,8 +81,10 @@ public class LeaderCM extends ConsensusModule {
 				RPCImpl.startMode(new FollowerCM());
 				return 0;
 			}
+			
 			// get rpc from itself
-			else if (leaderTerm == term && leaderID == cmDAServer.getServerId()) {
+			if (leaderID == cmDAServer.getServerId()) {
+				System.out.println("Received HEARTBEAT from myself");
 				return 0;
 			}
 
@@ -82,9 +94,7 @@ public class LeaderCM extends ConsensusModule {
 
 	@Override
 	public int requestVote(int candidateTerm, int candidateID, int lastLogIndex, int lastLogTerm) {
-		// TODO Auto-generated method stub
 		synchronized (cmLock) {
-
 			int term = cmDAServer.getCurrentTerm();
 			// Revert to follower if candidate has larger term than
 			// current leader
@@ -99,7 +109,6 @@ public class LeaderCM extends ConsensusModule {
 
 	@Override
 	protected void handleTimeout(int timerId) {
-		// TODO Auto-generated method stub
 		synchronized (cmLock) {
 			if (timerId == TIMER_ID) {
 				heartbeatTimer.cancel();
