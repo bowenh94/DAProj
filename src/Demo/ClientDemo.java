@@ -7,5 +7,4 @@ public class ClientDemo {
 		// TODO Auto-generated method stub
 		DAClient.main(args);
 	}
-
 }

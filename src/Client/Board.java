@@ -11,10 +11,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.HashMap;
 
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.Timer;
+
+import org.json.simple.JSONObject;
 
 public class Board extends JPanel implements ActionListener {
     /**
@@ -60,8 +63,9 @@ public class Board extends JPanel implements ActionListener {
     private Image apple;
     private Image head;
 
+    HashMap<Integer, Integer> leaderBoard;
+    
     public Board() {
-
         addKeyListener(new TAdapter());
         setBackground(Color.WHITE);
         setFocusable(true);
@@ -69,12 +73,18 @@ public class Board extends JPanel implements ActionListener {
         setPreferredSize(new Dimension(B_WIDTH, B_HEIGHT));
         loadImages();
         initGame();
+        
+        leaderBoard = new HashMap<Integer, Integer> ();
     }
 
     public int getScore() {
 		return score;
 	}
 
+    public void setLeaderBoard(HashMap<Integer, Integer> hashMap) {
+    		this.leaderBoard = hashMap;
+    }
+    
 	private void loadImages() {
 
         ImageIcon iid = new ImageIcon("dot.png");

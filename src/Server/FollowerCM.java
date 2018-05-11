@@ -1,7 +1,6 @@
 package Server;
 
 import java.util.Timer;
-import java.util.LinkedList;
 import java.util.Random;
 
 public class FollowerCM extends ConsensusModule {
@@ -13,7 +12,7 @@ public class FollowerCM extends ConsensusModule {
 	public void run() {
 		// TODO Auto-generated method stub
 		synchronized (cmLock) {
-			System.out.println("S" + cmServerId + "." + cmDAServer.getCurrentTerm() + ": switched to follower mode.");
+			System.out.println("S" + newServer.serverId + "." + newServer.currentTerm + ": switched to follower mode.");
 
 			// Create timer to detect missing leader
 			Random rand = new Random();
@@ -27,18 +26,18 @@ public class FollowerCM extends ConsensusModule {
 	public int appendEntries(int leaderTerm, int leaderID, int prevLogIndex, int prevLogTerm, Entry[] entries,
 			int leaderCommit) {
 		// TODO Auto-generated method stub
-		synchronized(cmLock) {
+		synchronized (cmLock) {
 			this.resetTimeoutTimer();
-			int term = cmDAServer.getCurrentTerm();
+			int term = newServer.currentTerm;
 			if (leaderTerm >= term) {
-				cmDAServer.setCurrentTerm(term);
+				newServer.setCurrentTerm(leaderTerm);
+				newServer.votedFor = -1;
 			}
-			int termAtIndex = log.getEntry(prevLogIndex).getTerm();
-			if(termAtIndex == prevLogTerm) {
-				log.insert(entries, prevLogIndex, prevLogTerm);
+			int termAtIndex = newServer.log.getEntry(prevLogIndex).getTerm();
+			if (termAtIndex == prevLogTerm) {
+				newServer.log.insert(entries, prevLogIndex, prevLogTerm);
 				return 0;
-			}
-			else {
+			} else {
 				return -1;
 			}
 		}
@@ -48,14 +47,17 @@ public class FollowerCM extends ConsensusModule {
 	public int requestVote(int candidateTerm, int candidateID, int lastLogIndex, int lastLogTerm) {
 		// TODO Auto-generated method stub
 		synchronized (cmLock) {
-			int term = cmDAServer.getCurrentTerm();
-			if (candidateTerm >= term && cmDAServer.getServerId() == 0 && lastLogIndex >= cmLastCommitId) {
+			int term = newServer.currentTerm;
+			if (candidateTerm >= term && newServer.votedFor == -1 && lastLogIndex >= cmLastCommitId) {
 				System.out.println(
-						"Server " + cmServerId + "received vote request from server " + candidateID + " and vote");
-				cmDAServer.setCurrentTerm(candidateTerm);
+						"Server " + newServer.serverId + "received vote request from server " + candidateID + " and vote");
+				newServer.setCurrentTerm(candidateTerm);
+				newServer.votedFor = candidateID;
 				return 0;
 			} else {
-				cmDAServer.setCurrentTerm(candidateTerm);
+				/*
+				 * different from source (?)
+				 */
 				return term;
 			}
 		}
@@ -67,7 +69,7 @@ public class FollowerCM extends ConsensusModule {
 		synchronized (cmLock) {
 			if (timerId == this.TIMEOUT_TIMER_ID) {
 				timeoutTimer.cancel();
-				System.out.println(cmServerId + " has not received heartbeat from leader");
+				System.out.println(newServer.serverId + " has not received heartbeat from leader");
 				RPCImpl.startMode(new CandidateCM());
 			}
 		}

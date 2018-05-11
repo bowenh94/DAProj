@@ -7,13 +7,13 @@ public class CandidateCM extends ConsensusModule {
 
 	private Timer electionTimeoutTimer;
 	// Timer id to distinguish two timer, they should have different approach to handle timeout 
-	private int TIMER_ID = 1;
+	private int TIMER_ID = 2;
 
 	@Override
 	protected void run() {
 		synchronized (cmLock) {
 			// when become candidate, increment self current term by 1
-			cmDAServer.setCurrentTerm(cmDAServer.getCurrentTerm() + 1);
+			newServer.currentTerm += 1;
 			// start new election
 			this.startElection();
 		}
@@ -21,7 +21,7 @@ public class CandidateCM extends ConsensusModule {
 
 	private void startElection() {
 		// get current term, set it to RPC response and clear vote list
-		int term = cmDAServer.getCurrentTerm();
+		int term = newServer.currentTerm;
 		RPCResponse.setTerm(term);
 		RPCResponse.clearVote(term);
 		Random random = new Random();
@@ -33,8 +33,8 @@ public class CandidateCM extends ConsensusModule {
 		/*
 		 * this req voting should be parallized
 		 */
-		for (int i = 0; i < cmDAServer.getServerNum(); i++) {
-			this.remoteRequestVote(i, term, cmDAServer.getServerId(), cmLastCommitId, log.getLastTerm());
+		for (int i = 0; i < newServer.serverNum; i++) {
+			this.remoteRequestVote(i, term, newServer.currentTerm, cmLastCommitId, newServer.log.getLastTerm());
 		}
 	}
 
@@ -45,12 +45,13 @@ public class CandidateCM extends ConsensusModule {
 		// term
 		// otherwise accept the call, return 0 and back to follower mode
 		synchronized (cmLock) {
-			if (leaderTerm >= cmDAServer.getCurrentTerm()) {
+			if (leaderTerm >= newServer.currentTerm) {
 				this.electionTimeoutTimer.cancel();
+				newServer.votedFor = -1;
 				RPCImpl.startMode(new FollowerCM());
 				return 0;
 			}
-			return cmDAServer.getCurrentTerm();
+			return newServer.currentTerm;
 		}
 	}
 
@@ -58,10 +59,10 @@ public class CandidateCM extends ConsensusModule {
 	public int requestVote(int candidateTerm, int candidateID, int lastLogIndex, int lastLogTerm) {
 		synchronized (cmLock) {
 			// vote for itself and refuse any other vote request
-			if (candidateID == cmServerId)
+			if (candidateID == newServer.serverId)
 				return 0;
 			else
-				return cmDAServer.getCurrentTerm();
+				return newServer.currentTerm;
 		}
 	}
 
@@ -70,16 +71,16 @@ public class CandidateCM extends ConsensusModule {
 		synchronized (cmLock) {
 			if (timerId == this.TIMER_ID) {
 				this.electionTimeoutTimer.cancel();
-				int[] vote = RPCResponse.getVoteResp(cmDAServer.getCurrentTerm());
+				int[] vote = RPCResponse.getVoteResp(newServer.currentTerm);
 				int count = 0;
 				for (int i = 0; i < vote.length; i++) {
 					if (vote[i] == 0)
 						count++;
 				}
-				if (count > cmDAServer.getServerNum() / 2) {
+				if (count > newServer.serverNum / 2) {
 					RPCImpl.startMode(new LeaderCM());
 				} else {
-					cmDAServer.setCurrentTerm(cmDAServer.getCurrentTerm() + 1);
+					newServer.currentTerm += 1;
 					this.startElection();
 				}
 			}
