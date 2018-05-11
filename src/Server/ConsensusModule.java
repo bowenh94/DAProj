@@ -1,17 +1,14 @@
 package Server;
 
-import java.rmi.Naming;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public abstract class ConsensusModule {
-	protected static Log log;
-	protected static StateMachine stateMachine;
-	protected static int cmRmiPort;
 	protected static Object cmLock;
-	protected static int cmServerId;
-	protected static DAServer cmDAServer;
-	protected static int cmLastCommitId;
+
+	public static int cmLastCommitId;
 	
 	/*
 	 * Election timeout bound
@@ -23,14 +20,9 @@ public abstract class ConsensusModule {
 	 */
 	protected final static int HEARTBEAT_INTERVAL=75;
 	
-	public static void initCM(int rmiPort, int serverId, DAServer daServer) {
+	public static void initCM(int rmiPort, int serverId) {
 		// TODO Auto-generated constructor stub
-		log = new Log();
-		stateMachine = new StateMachine();
 		cmLock = new Object();
-		cmRmiPort = rmiPort;
-		cmServerId = serverId;
-		cmDAServer = daServer;
 		cmLastCommitId = 0;
 	}
 	
@@ -47,10 +39,6 @@ public abstract class ConsensusModule {
 		return timer;
 	}
 
-	private final String getRmiUrl(int serverID) {
-		return "rmi://localhost:" + cmRmiPort + "/S" + serverID;
-	}
-
 	/*
 	 * RMI method call
 	 */
@@ -59,10 +47,11 @@ public abstract class ConsensusModule {
 		new Thread() {
 			@Override
 			public void run() {
-				String url = getRmiUrl(serverID);
+				String url = "S"+serverID;
 				//System.out.println(url);
 				try {
-					RPC rpc = (RPC) Naming.lookup(url);
+					Registry registry = LocateRegistry.getRegistry(newServer.initRmiPort+serverID);
+					RPC rpc = (RPC) registry.lookup(url);
 					int response = rpc.requestVote(candidateTerm, candidateID, lastLogIndex, lastLogTerm);
 					synchronized (cmLock) {
 						RPCResponse.setVote(serverID, response, candidateTerm);
@@ -80,9 +69,10 @@ public abstract class ConsensusModule {
 		new Thread() {
 			@Override
 			public void run() {
-				String url = getRmiUrl(serverID);
+				String url = "S"+serverID;
 				try {
-					RPC rpc = (RPC) Naming.lookup(url);
+					Registry registry = LocateRegistry.getRegistry(newServer.initRmiPort+serverID);
+					RPC rpc = (RPC) registry.lookup(url);
 					/*
 					 * Further implementation
 					 */

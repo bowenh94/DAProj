@@ -21,52 +21,50 @@ public class LeaderCM extends ConsensusModule {
 	}
 
 	private void sendHeartbeats() {
-		System.out.println("Leader " + cmDAServer.getServerId() + " sending HEARTBEAT");
+		System.out.println("Leader " + newServer.serverId + " sending HEARTBEAT");
 		// repair other server logs to match leader log
 		repairLog();
 	}
 
 	private void repairLog() {
-		RPCResponse.setTerm(cmDAServer.getCurrentTerm());
+		RPCResponse.setTerm(newServer.currentTerm);
 
 		// maintain last matching logs of leader and each server
-		int[] latestMatchingIndex = new int[cmDAServer.getServerNum()];
+		int[] latestMatchingIndex = new int[newServer.serverNum];
 
 		// fill initially assuming all server logs are equal
 		// length to leader
-		Arrays.fill(latestMatchingIndex, log.getLastIndex());
+		Arrays.fill(latestMatchingIndex, newServer.log.getLastIndex());
 
 		int majorityCommitCounter = 0;
 		// iterate through servers
-		for (int j = 0; j < cmDAServer.getServerNum(); j++) {
+		for (int j = 0; j < newServer.serverNum; j++) {
 			int response = -1;
 
 			while (response != 0) {
 				ArrayList<Entry> entryList = new ArrayList<Entry>();
 
-				for (int i = latestMatchingIndex[j]; i < log.getLastIndex() + 1; i++) {
-					entryList.add(log.getEntry(i));
+				for (int i = latestMatchingIndex[j]; i < newServer.log.getLastIndex() + 1; i++) {
+					entryList.add(newServer.log.getEntry(i));
 				}
 
 				Entry[] entries = new Entry[entryList.size()];
 				entries = entryList.toArray(entries);
-				remoteAppendEntries(j, cmDAServer.getCurrentTerm(), cmDAServer.getServerId(), latestMatchingIndex[j],
-						log.getEntry(latestMatchingIndex[j]).getTerm(), entries, cmLastCommitId);
+				remoteAppendEntries(j, newServer.currentTerm, newServer.serverId, latestMatchingIndex[j],
+						newServer.log.getEntry(latestMatchingIndex[j]).getTerm(), entries, cmLastCommitId);
 				// decrement log index and retry
 				latestMatchingIndex[j]--;
 
-				int[] responses = RPCResponse.getAppendEntryResp(cmDAServer.getCurrentTerm());
+				int[] responses = RPCResponse.getAppendEntryResp(newServer.currentTerm);
 				response = responses[j];
 			}
 			if (latestMatchingIndex[j] >= cmLastCommitId) {
 				majorityCommitCounter++;
 			}
 		}
-		
-		if (majorityCommitCounter > cmDAServer.getServerNum() / 2) {
+
+		if (majorityCommitCounter > newServer.serverNum / 2) {
 			cmLastCommitId++;
-			// TODO: commit
-			// stateMachine.executeLog(log, cmDAServer.serverSocket);
 		}
 	}
 
@@ -74,16 +72,17 @@ public class LeaderCM extends ConsensusModule {
 	public int appendEntries(int leaderTerm, int leaderID, int prevLogIndex, int prevLogTerm, Entry[] entries,
 			int leaderCommit) {
 		synchronized (cmLock) {
-			int term = cmDAServer.getCurrentTerm();
+			int term = newServer.currentTerm;
 
 			if (leaderTerm > term) {
 				heartbeatTimer.cancel();
+				newServer.votedFor = -1;
 				RPCImpl.startMode(new FollowerCM());
 				return 0;
 			}
-			
+
 			// get rpc from itself
-			if (leaderID == cmDAServer.getServerId()) {
+			if (leaderID == newServer.serverId) {
 				System.out.println("Received HEARTBEAT from myself");
 				return 0;
 			}
@@ -95,11 +94,12 @@ public class LeaderCM extends ConsensusModule {
 	@Override
 	public int requestVote(int candidateTerm, int candidateID, int lastLogIndex, int lastLogTerm) {
 		synchronized (cmLock) {
-			int term = cmDAServer.getCurrentTerm();
+			int term = newServer.currentTerm;
 			// Revert to follower if candidate has larger term than
 			// current leader
 			if (candidateTerm > term) {
 				heartbeatTimer.cancel();
+				newServer.votedFor = -1;
 				RPCImpl.startMode(new FollowerCM());
 				return 0;
 			}
