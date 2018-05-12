@@ -191,25 +191,24 @@ class Handler implements Runnable {
 
 				pbi.unread(singlebyte);
 				msg = br.readUTF();
-
+				System.out.println("get message" + msg);
 				request = stringtoJSON(msg);
 				response = new JSONObject();
 				/*
 				 * Futher inplementation to handling request from client
 				 */
-				String command = (String) request.get("command");
 				if (newServer.mode == CmMode.LEADER) {
+					// TODO: append client request to log
+					
 					// read log file
-					System.out.println("MMMMMMMMMMMMMMMMMMMMM");
-					response.put("respond", 1);
+					response.put("reply", "TRUE"); // YES, I'm leader
 					JSONObject leaderBoard = newServer.stateMachine.executeLog(newServer.log, ConsensusModule.cmLastCommitId, socket);
 					response.put("leader_board", leaderBoard);
 					out.writeUTF(response.toJSONString());
 					out.flush();
 				} else {
 					// i'm not in leader role
-					response.put("respond", 0);
-					System.out.println(response.toJSONString());
+					response.put("reply", "FALSE"); // Sorry, I'm not leader
 					out.writeUTF(response.toJSONString());
 					out.flush();
 				}

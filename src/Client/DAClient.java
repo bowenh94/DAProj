@@ -2,12 +2,13 @@ package Client;
 
 import java.awt.EventQueue;
 import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -55,7 +56,7 @@ public class DAClient extends JFrame {
 		// Main thread: communicate with server
 
 		// socket to find a Leader
-		BufferedReader in = null;
+		DataInputStream in = null;
 		DataOutputStream out = null;
 		Socket socket = null;
 
@@ -68,62 +69,119 @@ public class DAClient extends JFrame {
 		ArrayList<Pair<String, Integer>> serverList = readServerList();
 
 		while (true) {
-			try {
-				// find the server who is playing in leader role
-				for (int i = 0; i < serverList.size(); i++) {
-					Pair<String, Integer> firstServer = serverList.get(i);
-					try {
-						socket = new Socket(firstServer.getKey(), firstServer.getValue());
-						out = new DataOutputStream(socket.getOutputStream());
-						in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-						JSONObject request = new JSONObject();
-						request.put("client_id", clientID);
-						request.put("score", client.board.getScore());
-						System.out.println(request.toJSONString());
-						out.writeUTF(request.toJSONString());
-						out.flush();
-						System.out.println("flush");
-						String resp = in.readLine();
-						System.out.println(resp);
-						JSONObject response = stringtoJSON(resp);
-						if ((Boolean) response.get("respond")) {
-							// find leader and got the socket
-							break;
-						} else {
-							// not leader
-							socket.close();
-							out.close();
-							in.close();
-							continue;
-						}
-					} catch (Exception e) {
-						System.err.println("Server " + i + " is not alive!");
-						continue;
-					}
-				}
-				if (socket == null) {
-					System.err.println("No server alive! Query again later!");
-					Thread.sleep(REFRESH_INTERVAL);
+			// find the server who is playing in leader role
+			for (int i = 0; i < serverList.size(); i++) {
+				Pair<String, Integer> firstServer = serverList.get(i);
+				System.out.println("Connect to " + firstServer.getKey() + ":" + firstServer.getValue());
+
+				try {
+					socket = new Socket(firstServer.getKey(), firstServer.getValue());
+				} catch (UnknownHostException e) {
+					e.printStackTrace();
+					continue;
+				} catch (IOException e) {
+					System.out.println("Server " + firstServer.getKey() + ":" + firstServer.getValue() + " is not alive!");
 					continue;
 				}
 
-				Thread.sleep(REFRESH_INTERVAL);
-				JSONObject msg = new JSONObject();
-				// TODO: send msg to server
-				msg.put("client_id", clientID);
-				msg.put("score", client.board.getScore());
-				out.writeUTF(msg.toJSONString());
-				out.flush();
-				String resp = in.readLine();
-				System.out.println(resp);
-				JSONObject respond = stringtoJSON(resp);
-				if ((boolean) respond.get("respond")) {
-					// updating my leader board
-					client.board.setLeaderBoard((HashMap<Integer, Integer>) respond.get("leader_board"));
-				} else {
-					// oops, he is not in leader mode anymore. Should start another query again.
-					break;
+				// generate request JSON object
+				JSONObject request = new JSONObject();
+				request.put("client_id", clientID);
+				request.put("score", client.board.getScore());
+				System.out.println(request.toJSONString());
+				
+				String resp;
+				try {
+					out = new DataOutputStream(socket.getOutputStream());
+					in = new DataInputStream(socket.getInputStream());
+					out.writeUTF(request.toJSONString());
+					out.flush();
+					resp = in.readUTF();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					continue;
 				}
+
+				System.out.println(resp);
+				JSONObject response = stringtoJSON(resp);
+				String reply = (String) response.get("reply");
+				
+				if ("TRUE".equals(reply)) {
+					// current server is leader, start communicating
+					while (true) {
+						JSONObject msg = new JSONObject();
+						// TODO: send msg to server
+						msg.put("client_id", clientID);
+						msg.put("score", client.board.getScore());
+						try {
+							out.writeUTF(msg.toJSONString());
+							out.flush();
+							resp = in.readUTF();
+						} catch (IOException e) {
+							System.err.println("Connection fail.");
+							e.printStackTrace();
+							break;
+						}
+						
+						System.out.println(resp);
+						response = stringtoJSON(resp);
+						if ((boolean) response.get("respond")) {
+							// updating my leader board
+							client.board.setLeaderBoard((HashMap<Integer, Integer>) response.get("leader_board"));
+						} else {
+							// oops, he is not in leader mode anymore. Should start another query again
+							break;
+						}
+					}
+				} else {
+					// current server is not leader
+					System.out.println("Server " + firstServer.getKey() + ":" + firstServer.getValue() + " is not leader now. Reconnect to another server.");
+					try {
+						socket.close();
+						out.close();
+						in.close();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					continue;
+				}
+				
+				try {
+					if (socket != null)
+						socket.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				try {
+					if (in != null)
+						in.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				try {
+					if (out != null) {
+						out.close();
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			
+			if (socket == null) {
+				System.err.println("There is no any server alive!");
+				try {
+					Thread.sleep(REFRESH_INTERVAL);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+	// end main
+	}
+
 
 				/*
 				 * not used any more, feel sad (Owen)
@@ -159,16 +217,7 @@ public class DAClient extends JFrame {
 				 * client.board.setLeaderBoard((HashMap<Integer, Integer>)
 				 * jsonResp.get("leader_board")); }
 				 */
-
-			} catch (Exception e) {
-				System.err.println("Connection fail, try again latter~");
-				try {
-					Thread.sleep(REFRESH_INTERVAL);
-				} catch (InterruptedException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-				e.printStackTrace();
+				/*
 			} finally {
 				try {
 					if (socket != null)
@@ -197,15 +246,11 @@ public class DAClient extends JFrame {
 				 * { e.printStackTrace(); } } if (leaderSocket != null) { try {
 				 * leaderSocket.close(); } catch (IOException e) { e.printStackTrace(); } }
 				 */
-			}
-		}
-	}
 
 	public static JSONObject stringtoJSON(String msg) {
 		JSONParser jsonParser = new JSONParser();
 		JSONObject jsonObject;
 		try {
-			System.out.println(msg+"***************");
 			jsonObject = (JSONObject) jsonParser.parse(msg);
 			return jsonObject;
 		} catch (Exception e) {
