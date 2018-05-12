@@ -34,8 +34,12 @@ public class CandidateCM extends ConsensusModule {
 		 * this req voting should be parallized
 		 */
 		for (int i = 0; i < newServer.serverNum; i++) {
-			this.remoteRequestVote(i, term, newServer.currentTerm, cmLastCommitId, newServer.log.getLastTerm());
-		}
+			this.remoteRequestVote(i, term, newServer.serverId, cmLastCommitId, newServer.log.getLastTerm());
+		}	
+		/*
+		System.out.println("!!!!!!!!!!!!!!"+term);
+		this.remoteRequestVote(newServer.serverId, term, newServer.serverId, newServer.log.getLastIndex(), newServer.log.getLastTerm());
+		*/		
 	}
 
 	@Override

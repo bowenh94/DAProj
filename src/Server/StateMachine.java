@@ -23,7 +23,7 @@ public class StateMachine {
 	@SuppressWarnings("unchecked")
 	public JSONObject executeLog(Log log, int lastCommitId, Socket socket) {
 		LinkedList<Entry> smlog = log.get();
-		for (int i = 0; i < lastCommitId; i++) {
+		for (int i = 0; i <= lastCommitId; i++) {
 			Entry e = smlog.get(i);
 			int clientId = e.getClientID();
 			int clientVal = e.getCLientVal();
@@ -35,7 +35,7 @@ public class StateMachine {
 		}
 		
 		JSONObject leaderBoard = new JSONObject();
-		
+		leaderBoard.putAll(map);
 		return leaderBoard;
 		// write map to log file
 		

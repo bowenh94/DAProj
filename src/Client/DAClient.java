@@ -103,37 +103,17 @@ public class DAClient extends JFrame {
 					continue;
 				}
 
-				System.out.println(resp);
 				JSONObject response = stringtoJSON(resp);
 				String reply = (String) response.get("reply");
+				System.out.println(response.toJSONString()+"!!!!!!!!!!!!!!!!!");
 				
-				if ("TRUE".equals(reply)) {
-					// current server is leader, start communicating
-					while (true) {
-						JSONObject msg = new JSONObject();
-						// TODO: send msg to server
-						msg.put("client_id", clientID);
-						msg.put("score", client.board.getScore());
-						try {
-							out.writeUTF(msg.toJSONString());
-							out.flush();
-							resp = in.readUTF();
-						} catch (IOException e) {
-							System.err.println("Connection fail.");
-							e.printStackTrace();
-							break;
-						}
-						
-						System.out.println(resp);
-						response = stringtoJSON(resp);
-						if ((boolean) response.get("respond")) {
-							// updating my leader board
-							client.board.setLeaderBoard((HashMap<Integer, Integer>) response.get("leader_board"));
-						} else {
-							// oops, he is not in leader mode anymore. Should start another query again
-							break;
-						}
-					}
+				if("TRUE".equals(reply)){
+					JSONObject leaderboard = stringtoJSON(response.get("leader_board").toString());
+					
+					System.out.println(leaderboard.toJSONString());
+					
+					client.board.setLeaderBoard(leaderboard);
+					
 				} else {
 					// current server is not leader
 					System.out.println("Server " + firstServer.getKey() + ":" + firstServer.getValue() + " is not leader now. Reconnect to another server.");
@@ -146,8 +126,7 @@ public class DAClient extends JFrame {
 						e.printStackTrace();
 					}
 					continue;
-				}
-				
+				}				
 				try {
 					if (socket != null)
 						socket.close();

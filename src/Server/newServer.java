@@ -38,9 +38,15 @@ public class newServer {
 	private static final int poolsize = 5;
 	private static ExecutorService eService;
 	private static ServerSocket serverSocket;
+	/*
+	 * change to leader for test of c-s communication
+	 */
 	public static CmMode mode = CmMode.FOLLOWER;
 	public static int votedFor = -1;
 
+	//For single client and server test
+	//public static int test = 3;
+	
 	public enum CmMode {
 		LEADER, FOLLOWER, CANDIDATE
 	}
@@ -68,7 +74,9 @@ public class newServer {
 		// read file
 		readServerList();
 		readConfig();
-
+		
+		
+		
 		// create thread pool and start a service thread
 		eService = Executors.newFixedThreadPool(poolsize);
 		new Thread() {
@@ -79,7 +87,6 @@ public class newServer {
 					Socket socket = null;
 					while (true) {
 						socket = serverSocket.accept();
-						System.out.println("!!!!!!!!!!!!!!!!!!!");
 						eService.execute(new Handler(socket));
 					}
 				} catch (Exception e) {
@@ -88,7 +95,8 @@ public class newServer {
 				}
 			}
 		}.start();
-		/*
+		
+		
 		// consensus module
 		RPCResponse.init(serverNum, currentTerm);
 		ConsensusModule.initCM(rmiPort, serverId);
@@ -102,7 +110,7 @@ public class newServer {
 			e.printStackTrace();
 		}
 		RPCImpl.startMode(new FollowerCM());
-		*/
+	
 	}
 
 	private static void readServerList() {
@@ -193,17 +201,29 @@ class Handler implements Runnable {
 				msg = br.readUTF();
 				System.out.println("get message" + msg);
 				request = stringtoJSON(msg);
+				
 				response = new JSONObject();
 				/*
 				 * Futher inplementation to handling request from client
 				 */
 				if (newServer.mode == CmMode.LEADER) {
-					// TODO: append client request to log
-					
+					// if it's leader, append client's id and score to log 
+					int client_id = ((Long) request.get("client_id")).intValue();
+					int client_score = ((Long) request.get("score")).intValue();
+					Entry new_e = new Entry(newServer.currentTerm,client_id, client_score);
+					System.out.println(new_e);
+					newServer.log.append(new_e);
+
 					// read log file
 					response.put("reply", "TRUE"); // YES, I'm leader
 					JSONObject leaderBoard = newServer.stateMachine.executeLog(newServer.log, ConsensusModule.cmLastCommitId, socket);
-					response.put("leader_board", leaderBoard);
+					
+					// Test code for single server and client
+					//JSONObject leaderBoard = newServer.stateMachine.executeLog(newServer.log, newServer.test, socket);
+					//newServer.test+=1;
+					
+					System.out.println(leaderBoard.toJSONString());
+					response.put("leader_board", leaderBoard.toJSONString());
 					out.writeUTF(response.toJSONString());
 					out.flush();
 				} else {
@@ -213,9 +233,7 @@ class Handler implements Runnable {
 					out.flush();
 				}
 			}
-		} catch (
-
-		Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 

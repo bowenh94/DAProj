@@ -12,6 +12,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
@@ -63,7 +64,7 @@ public class Board extends JPanel implements ActionListener {
     private Image apple;
     private Image head;
 
-    HashMap<Integer, Integer> leaderBoard;
+    private JSONObject leaderBoard;
     
     public Board() {
         addKeyListener(new TAdapter());
@@ -73,16 +74,15 @@ public class Board extends JPanel implements ActionListener {
         setPreferredSize(new Dimension(B_WIDTH, B_HEIGHT));
         loadImages();
         initGame();
-        
-        leaderBoard = new HashMap<Integer, Integer> ();
+        leaderBoard = new JSONObject();
     }
 
     public int getScore() {
 		return score;
 	}
 
-    public void setLeaderBoard(HashMap<Integer, Integer> hashMap) {
-    		this.leaderBoard = hashMap;
+    public void setLeaderBoard(JSONObject leaderBoard) {
+    		this.leaderBoard = leaderBoard;
     }
     
 	private void loadImages() {
@@ -117,6 +117,12 @@ public class Board extends JPanel implements ActionListener {
         super.paintComponent(g);
         String scoreRecord = "Score:"+String.valueOf(score);
         g.drawString(scoreRecord, 10, 20);
+        int i = 15;
+        for(Object key:leaderBoard.keySet()){
+        	String score = "client "+key.toString() +" : "+ leaderBoard.get(key);
+        	g.drawString(score, 10, 20+i);
+        	i+=15;
+        }
         doDrawing(g);
     }
     
