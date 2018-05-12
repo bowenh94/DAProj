@@ -15,6 +15,7 @@ public class CandidateCM extends ConsensusModule {
 			// when become candidate, increment self current term by 1
 			newServer.currentTerm += 1;
 			// start new election
+			System.out.println("S" + newServer.serverId + " start election");
 			this.startElection();
 		}
 	}
@@ -25,6 +26,8 @@ public class CandidateCM extends ConsensusModule {
 		RPCResponse.setTerm(term);
 		RPCResponse.clearVote(term);
 		Random random = new Random();
+		
+		//System.out.println("S"+newServer.serverId + " Random is "+ (random.nextInt(this.ELECTION_TIMEOUT_MAX - this.ELECTION_TIMEOUT_MIN) + this.ELECTION_TIMEOUT_MIN));
 
 		electionTimeoutTimer = scheduleTimer(
 				random.nextInt(this.ELECTION_TIMEOUT_MAX - this.ELECTION_TIMEOUT_MIN) + this.ELECTION_TIMEOUT_MIN,
@@ -81,6 +84,7 @@ public class CandidateCM extends ConsensusModule {
 					if (vote[i] == 0)
 						count++;
 				}
+				//System.err.println("S"+ newServer.serverId + " get vote "+ count +" at term "+newServer.currentTerm);
 				if (count > newServer.serverNum / 2) {
 					RPCImpl.startMode(new LeaderCM());
 				} else {

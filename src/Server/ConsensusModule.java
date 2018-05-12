@@ -13,17 +13,17 @@ public abstract class ConsensusModule {
 	/*
 	 * Election timeout bound
 	 */
-	protected final int ELECTION_TIMEOUT_MIN=150;
-	protected final int ELECTION_TIMEOUT_MAX=300;
+	protected final int ELECTION_TIMEOUT_MIN=1500;
+	protected final int ELECTION_TIMEOUT_MAX=3000;
 	/*
 	 * Heart-beat interval
 	 */
-	protected final static int HEARTBEAT_INTERVAL=75;
+	protected final static int HEARTBEAT_INTERVAL=750;
 	
 	public static void initCM(int rmiPort, int serverId) {
 		// TODO Auto-generated constructor stub
 		cmLock = new Object();
-		cmLastCommitId = 0;
+		cmLastCommitId = 2;
 	}
 	
 	protected final Timer scheduleTimer(long millis, final int timerId){
@@ -52,13 +52,16 @@ public abstract class ConsensusModule {
 				try {
 					Registry registry = LocateRegistry.getRegistry(newServer.initRmiPort+serverID);
 					RPC rpc = (RPC) registry.lookup(url);
+					
 					int response = rpc.requestVote(candidateTerm, candidateID, lastLogIndex, lastLogTerm);
+					//System.err.println("S"+ newServer.serverId + " Lookup at "+ newServer.initRmiPort+serverID + " for "+url +", Response is "+response);
 					synchronized (cmLock) {
 						RPCResponse.setVote(serverID, response, candidateTerm);
 					}
 				} catch (Exception e) {
 					// TODO: handle exception
-					e.printStackTrace();
+					//e.printStackTrace();
+					
 				}
 			}
 		}.start();
@@ -66,6 +69,31 @@ public abstract class ConsensusModule {
 
 	protected final void remoteAppendEntries(final int serverID, final int leaderTerm, final int leaderID,
 			final int prevLogIndex, final int prevLogTerm, final Entry[] entries, final int leaderCommit) {
+		
+		new Thread() {
+			@Override
+			public void run() {
+				String url = "S"+serverID;
+				//System.out.println(url);
+				try {
+					Registry registry = LocateRegistry.getRegistry(newServer.initRmiPort+serverID);
+					RPC rpc = (RPC) registry.lookup(url);
+					
+					int response = rpc.appendEntries(leaderTerm, leaderID, prevLogIndex, prevLogTerm, entries, leaderCommit);
+					
+					//System.err.println("S"+ newServer.serverId + " Lookup at "+ newServer.initRmiPort+serverID + " for "+url +", Response is "+response);
+					synchronized (cmLock) {
+						RPCResponse.setAppendEntryResp(serverID, response, leaderTerm);
+					}
+				} catch (Exception e) {
+					// TODO: handle exception
+					//e.printStackTrace();
+					
+				}
+			}
+		}.start();
+		
+		/*
 		new Thread() {
 			@Override
 			public void run() {
@@ -73,19 +101,21 @@ public abstract class ConsensusModule {
 				try {
 					Registry registry = LocateRegistry.getRegistry(newServer.initRmiPort+serverID);
 					RPC rpc = (RPC) registry.lookup(url);
-					/*
-					 * Further implementation
-					 */
+
+					System.out.println(leaderTerm+"|"+ leaderID+"|"+ prevLogIndex+"|"+ prevLogTerm+"|"+ entries.length+"|"+ leaderCommit);
+					
 					int response = rpc.appendEntries(leaderTerm, leaderID, prevLogIndex, prevLogTerm, entries, leaderCommit);
 					synchronized (cmLock) {
+						System.out.println("######################");
 						RPCResponse.setAppendEntryResp(serverID, response, leaderTerm);
 					}
 				} catch (Exception e) {
 					// TODO: handle exception
-					e.printStackTrace();
+					//e.printStackTrace();
 				}
 			}
 		}.start();
+		*/
 	}
 
 	

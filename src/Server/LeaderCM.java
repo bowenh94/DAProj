@@ -39,30 +39,52 @@ public class LeaderCM extends ConsensusModule {
 		int majorityCommitCounter = 0;
 		// iterate through servers
 		for (int j = 0; j < newServer.serverNum; j++) {
+			System.out.println("S"+newServer.serverId + " send hb to S"+ j);
+			remoteAppendEntries(j, newServer.currentTerm, newServer.serverId, latestMatchingIndex[j],
+					newServer.log.getEntry(latestMatchingIndex[j]).getTerm(), null, cmLastCommitId);
+			/*
 			int response = -1;
 
 			while (response != 0) {
 				ArrayList<Entry> entryList = new ArrayList<Entry>();
 
-				for (int i = latestMatchingIndex[j]; i < newServer.log.getLastIndex() + 1; i++) {
+				for (int i = latestMatchingIndex[j]; i < newServer.log.getLastIndex(); i++) {
 					entryList.add(newServer.log.getEntry(i));
 				}
-
+				//System.out.println("entry length for fucking "+entryList.size());
+				
 				Entry[] entries = new Entry[entryList.size()];
 				entries = entryList.toArray(entries);
+				
+				
 				remoteAppendEntries(j, newServer.currentTerm, newServer.serverId, latestMatchingIndex[j],
 						newServer.log.getEntry(latestMatchingIndex[j]).getTerm(), entries, cmLastCommitId);
+				
 				// decrement log index and retry
 				latestMatchingIndex[j]--;
 
 				int[] responses = RPCResponse.getAppendEntryResp(newServer.currentTerm);
 				response = responses[j];
+				System.out.println("response from "+j+" is:"+response);
 			}
+			
 			if (latestMatchingIndex[j] >= cmLastCommitId) {
+				majorityCommitCounter++;
+			}*/
+		}
+		/*
+		try {
+			Thread.sleep(500);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}*/
+		int[] response = RPCResponse.getAppendEntryResp(newServer.currentTerm);
+		for(int j=0;j<newServer.serverNum;j++){
+			if (response[j] == 0) {
 				majorityCommitCounter++;
 			}
 		}
-
 		if (majorityCommitCounter > newServer.serverNum / 2) {
 			cmLastCommitId++;
 		}

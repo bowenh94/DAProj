@@ -27,6 +27,8 @@ public class FollowerCM extends ConsensusModule {
 			int leaderCommit) {
 		// TODO Auto-generated method stub
 		synchronized (cmLock) {
+			System.out.println("FUCKING FOLLOWER");
+			System.out.println("S"+newServer.serverId+" current term is "+newServer.currentTerm);
 			this.resetTimeoutTimer();
 			int term = newServer.currentTerm;
 			if (leaderTerm >= term) {
@@ -35,7 +37,7 @@ public class FollowerCM extends ConsensusModule {
 			}
 			int termAtIndex = newServer.log.getEntry(prevLogIndex).getTerm();
 			if (termAtIndex == prevLogTerm) {
-				newServer.log.insert(entries, prevLogIndex, prevLogTerm);
+				newServer.log.insert(entries, prevLogIndex, prevLogTerm);				
 				return 0;
 			} else {
 				return -1;
