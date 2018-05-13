@@ -35,7 +35,7 @@ public class RPCResponse {
 	public static boolean clearAppendResp(int term) {
 		if(term==cTerm){
 			for(int i=0;i<appendEntryResp.length;i++)
-				appendEntryResp[i] = null;
+				appendEntryResp[i] = -100;
 			return true;
 		}else
 			return false;

@@ -1,6 +1,9 @@
 package Server;
 
 import java.util.Timer;
+
+import Server.newServer.CmMode;
+
 import java.util.Random;
 
 public class FollowerCM extends ConsensusModule {
@@ -12,6 +15,7 @@ public class FollowerCM extends ConsensusModule {
 	public void run() {
 		// TODO Auto-generated method stub
 		synchronized (cmLock) {
+			newServer.mode = CmMode.FOLLOWER;
 			System.out.println("S" + newServer.serverId + "." + newServer.currentTerm + ": switched to follower mode.");
 
 			// Create timer to detect missing leader
@@ -27,12 +31,13 @@ public class FollowerCM extends ConsensusModule {
 			int leaderCommit) {
 		// TODO Auto-generated method stub
 		synchronized (cmLock) {
-			System.out.println("S"+newServer.serverId + "."+newServer.currentTerm +" Leader term is "+leaderTerm);
+			System.out.println("S"+newServer.serverId + "."+newServer.currentTerm +" Leader term is "+leaderTerm + " with Entry of ");
+
 			this.resetTimeoutTimer();
 			int term = newServer.currentTerm;
 			if (leaderTerm >= term) {
 				newServer.setCurrentTerm(leaderTerm);
-				newServer.votedFor = -1;
+				//newServer.votedFor = -1;
 			}
 			int termAtIndex = newServer.log.getEntry(prevLogIndex).getTerm();
 			if (termAtIndex == prevLogTerm) {

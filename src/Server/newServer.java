@@ -96,7 +96,7 @@ public class newServer {
 			}
 		}.start();
 		
-		/*
+		
 		// consensus module
 		RPCResponse.init(serverNum, currentTerm);
 		ConsensusModule.initCM(rmiPort, serverId);
@@ -111,7 +111,7 @@ public class newServer {
 			e.printStackTrace();
 		}
 		RPCImpl.startMode(new FollowerCM());
-		*/
+		
 	}
 
 	private static void readServerList() {
@@ -217,13 +217,14 @@ class Handler implements Runnable {
 
 					// read log file
 					response.put("reply", "TRUE"); // YES, I'm leader
+					//change to incremental int 
 					JSONObject leaderBoard = newServer.stateMachine.executeLog(newServer.log, ConsensusModule.cmLastCommitId, socket);
 					
 					// Test code for single server and client
 					//JSONObject leaderBoard = newServer.stateMachine.executeLog(newServer.log, newServer.test, socket);
 					//newServer.test+=1;
 					
-					System.out.println(leaderBoard.toJSONString());
+					System.out.println("current length of log is "+newServer.log.getLastIndex()+ " !! last commit :"+ConsensusModule.cmLastCommitId+"------"+leaderBoard.toJSONString());
 					response.put("leader_board", leaderBoard.toJSONString());
 					out.writeUTF(response.toJSONString());
 					out.flush();

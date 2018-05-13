@@ -18,4 +18,7 @@ public class Entry {
 	public int getCLientVal() {
 		return this.clientVal;
 	}
+	public String toString(){
+		return this.term+ ", "+this.clientID+", "+this.clientVal;
+	}
 }

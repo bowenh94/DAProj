@@ -16,7 +16,7 @@ INIT_RMI_PORT="$3"
 echo "Rmi port start from $INIT_RMI_PORT"
 
 echo "$SCRIPT_DIR is the class path"
-java -classpath "$SCRIPT_DIR/target/classes/" Server.newServer 0 "$INIT_SERVER_PORT" "$INIT_RMI_PORT" & java -classpath "$SCRIPT_DIR/target/classes/" Server.newServer 1 "$INIT_SERVER_PORT" "$INIT_RMI_PORT" & java -classpath "$SCRIPT_DIR/target/classes/" Server.newServer 2 "$INIT_SERVER_PORT" "$INIT_RMI_PORT"
+java -jar DemoServer.jar 0 "$INIT_SERVER_PORT" "$INIT_RMI_PORT" & java -jar DemoServer.jar 1 "$INIT_SERVER_PORT" "$INIT_RMI_PORT" & java -jar DemoServer.jar 2 "$INIT_SERVER_PORT" "$INIT_RMI_PORT"
 echo "Starting server $id"
 
 

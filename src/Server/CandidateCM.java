@@ -3,6 +3,8 @@ package Server;
 import java.util.Random;
 import java.util.Timer;
 
+import Server.newServer.CmMode;
+
 public class CandidateCM extends ConsensusModule {
 
 	private Timer electionTimeoutTimer;
@@ -12,6 +14,7 @@ public class CandidateCM extends ConsensusModule {
 	@Override
 	protected void run() {
 		synchronized (cmLock) {
+			newServer.mode = CmMode.CANDIDATE;
 			// when become candidate, increment self current term by 1
 			newServer.currentTerm += 1;
 			// start new election
@@ -66,8 +69,10 @@ public class CandidateCM extends ConsensusModule {
 	public int requestVote(int candidateTerm, int candidateID, int lastLogIndex, int lastLogTerm) {
 		synchronized (cmLock) {
 			// vote for itself and refuse any other vote request
-			if (candidateID == newServer.serverId)
+			if (candidateID == newServer.serverId){
+				newServer.votedFor = newServer.serverId;
 				return 0;
+			}				
 			else
 				return newServer.currentTerm;
 		}

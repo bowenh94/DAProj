@@ -1,8 +1,11 @@
 package Server;
 
+import java.awt.print.Printable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Timer;
+
+import Server.newServer.CmMode;
 
 public class LeaderCM extends ConsensusModule {
 
@@ -24,6 +27,7 @@ public class LeaderCM extends ConsensusModule {
 	@Override
 	protected void run() {
 		synchronized (cmLock) {
+			newServer.mode = CmMode.LEADER;
 			Arrays.fill(latestMatchingIndex, currentLastIndex);
 			sendHeartbeats();
 			// start heart-beat timer
@@ -38,19 +42,22 @@ public class LeaderCM extends ConsensusModule {
 
 		// iterate through servers
 		for (int j = 0; j < newServer.serverNum; j++) {
-			System.out.println("S" + newServer.serverId + " send hb to S" + j);
+			
 
 			// generate an entry list: from lastMatching index to Last index
 			ArrayList<Entry> entryList = new ArrayList<Entry>();
 			for (int i = latestMatchingIndex[j]; i < currentLastIndex; i++) {
 				entryList.add(newServer.log.getEntry(i));
 			}
+			System.out.println("S" + newServer.serverId + " send hb to S" + j+", with log size of "+entryList.size());
 			Entry[] entries = new Entry[entryList.size()];
 			entries = entryList.toArray(entries);
 
+
 			remoteAppendEntries(j, newServer.currentTerm, newServer.serverId, latestMatchingIndex[j],
-					newServer.log.getEntry(latestMatchingIndex[j]).getTerm(), null, cmLastCommitId);
+					newServer.log.getEntry(latestMatchingIndex[j]).getTerm(), entries, cmLastCommitId);
 		}
+		System.out.println("Leader " + newServer.serverId + " ENDENDEND to send HEARTBEAT");
 	}
 
 	@Override
@@ -102,9 +109,17 @@ public class LeaderCM extends ConsensusModule {
 
 				// deal with responses, and decide if commit or not
 				appendEntryResponses = RPCResponse.getAppendEntryResp(newServer.currentTerm);
+				
+				System.out.println("append entry responses:++++++++++++++++++++++++++++++++++++++++++++++++++");
+				for(int i:appendEntryResponses){
+					System.out.print(i+" ------------ ");
+				}
+					
+				System.out.println("current last index:" + currentLastIndex);
 				for (int j = 0; j < newServer.serverNum; j++) {
 					if (appendEntryResponses[j] == 0) {
 						if(currentLastIndex > cmLastCommitId) {
+							System.out.println("leader ---------- counter ++");
 							majorityCommitCounter++;
 						}
 						latestMatchingIndex[j] = currentLastIndex;
@@ -114,10 +129,14 @@ public class LeaderCM extends ConsensusModule {
 						}
 					}
 				}
+				
+				System.out.println("majority :" + majorityCommitCounter);
 				if (majorityCommitCounter > newServer.serverNum / 2) {
+					System.out.println("___________ commit ++ ______________");
 					cmLastCommitId++;
-					majorityCommitCounter = 0;
 				}
+				
+				majorityCommitCounter = 0;
 				RPCResponse.clearAppendResp(newServer.currentTerm);
 				
 				// reset

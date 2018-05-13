@@ -70,6 +70,13 @@ public class DAClient extends JFrame {
 
 		while (true) {
 			// find the server who is playing in leader role
+			try {
+				Thread.sleep(5000);
+			} catch (InterruptedException e1) {
+				// TODO Auto-generated catch block
+				System.err.println("FUCKING sleep error ");
+				//e1.printStackTrace();
+			}
 			for (int i = 0; i < serverList.size(); i++) {
 				Pair<String, Integer> firstServer = serverList.get(i);
 				System.out.println("Connect to " + firstServer.getKey() + ":" + firstServer.getValue());
