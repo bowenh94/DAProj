@@ -21,7 +21,7 @@ public class LeaderCM extends ConsensusModule {
 	}
 
 	private void sendHeartbeats() {
-		System.out.println("Leader " + newServer.serverId + " sending HEARTBEAT");
+		System.out.println("Leader " + newServer.serverId+"."+newServer.currentTerm + " sending HEARTBEAT");
 		// repair other server logs to match leader log
 		repairLog();
 	}
@@ -39,7 +39,7 @@ public class LeaderCM extends ConsensusModule {
 		int majorityCommitCounter = 0;
 		// iterate through servers
 		for (int j = 0; j < newServer.serverNum; j++) {
-			System.out.println("S"+newServer.serverId + " send hb to S"+ j);
+			System.out.println("S"+newServer.serverId +"."+newServer.currentTerm + " send hb to S"+ j);
 			remoteAppendEntries(j, newServer.currentTerm, newServer.serverId, latestMatchingIndex[j],
 					newServer.log.getEntry(latestMatchingIndex[j]).getTerm(), null, cmLastCommitId);
 			/*
@@ -122,6 +122,7 @@ public class LeaderCM extends ConsensusModule {
 			if (candidateTerm > term) {
 				heartbeatTimer.cancel();
 				newServer.votedFor = -1;
+				System.out.println("Leader "+newServer.serverId+"."+newServer.currentTerm + ": receive " +"S"+candidateID+"."+candidateTerm);
 				RPCImpl.startMode(new FollowerCM());
 				return 0;
 			}
