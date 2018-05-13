@@ -27,7 +27,7 @@ public class FollowerCM extends ConsensusModule {
 	}
 
 	@Override
-	public int appendEntries(int leaderTerm, int leaderID, int prevLogIndex, int prevLogTerm, Entry[] entries,
+	public int appendEntries(int leaderTerm, int leaderID, int prevLogIndex, int prevLogTerm, String entries,
 			int leaderCommit) {
 		// TODO Auto-generated method stub
 		synchronized (cmLock) {
@@ -41,9 +41,12 @@ public class FollowerCM extends ConsensusModule {
 			}
 			int termAtIndex = newServer.log.getEntry(prevLogIndex).getTerm();
 			if (termAtIndex == prevLogTerm) {
-				newServer.log.insert(entries, prevLogIndex, prevLogTerm);				
+				Entry[] newEntries = newServer.stringtoEntries(entries);
+				newServer.log.insert(newEntries, prevLogIndex, prevLogTerm);		
+				System.out.println("Return 0 here -----------------------------------------");
 				return 0;
 			} else {
+				System.out.println("Return -1 here ----------------------------------------");
 				return -1;
 			}
 		}

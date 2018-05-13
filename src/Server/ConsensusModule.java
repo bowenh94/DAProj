@@ -48,7 +48,6 @@ public abstract class ConsensusModule {
 			@Override
 			public void run() {
 				String url = "S"+serverID;
-				//System.out.println(url);
 				try {
 					Registry registry = LocateRegistry.getRegistry(newServer.initRmiPort+serverID);
 					RPC rpc = (RPC) registry.lookup(url);
@@ -59,17 +58,14 @@ public abstract class ConsensusModule {
 						RPCResponse.setVote(serverID, response, candidateTerm);
 					}
 				} catch (Exception e) {
-					// TODO: handle exception
-					//e.printStackTrace();
-					
+					e.printStackTrace();
 				}
 			}
 		}.start();
 	}
 
 	protected final void remoteAppendEntries(final int serverID, final int leaderTerm, final int leaderID,
-			final int prevLogIndex, final int prevLogTerm, final Entry[] entries, final int leaderCommit) {
-		
+			final int prevLogIndex, final int prevLogTerm, final String entries, final int leaderCommit) {		
 		new Thread() {
 			@Override
 			public void run() {
@@ -87,35 +83,11 @@ public abstract class ConsensusModule {
 					}
 				} catch (Exception e) {
 					// TODO: handle exception
-					//e.printStackTrace();
-					
+					e.printStackTrace();					
 				}
 			}
 		}.start();
 		
-		/*
-		new Thread() {
-			@Override
-			public void run() {
-				String url = "S"+serverID;
-				try {
-					Registry registry = LocateRegistry.getRegistry(newServer.initRmiPort+serverID);
-					RPC rpc = (RPC) registry.lookup(url);
-
-					System.out.println(leaderTerm+"|"+ leaderID+"|"+ prevLogIndex+"|"+ prevLogTerm+"|"+ entries.length+"|"+ leaderCommit);
-					
-					int response = rpc.appendEntries(leaderTerm, leaderID, prevLogIndex, prevLogTerm, entries, leaderCommit);
-					synchronized (cmLock) {
-						System.out.println("######################");
-						RPCResponse.setAppendEntryResp(serverID, response, leaderTerm);
-					}
-				} catch (Exception e) {
-					// TODO: handle exception
-					//e.printStackTrace();
-				}
-			}
-		}.start();
-		*/
 	}
 
 	
@@ -130,7 +102,7 @@ public abstract class ConsensusModule {
 	 * Return current term if appendEntry fail 
 	 * else 0
 	 */
-	abstract public int appendEntries(int leaderTerm, int leaderID, int prevLogIndex, int prevLogTerm, Entry[] entries,
+	abstract public int appendEntries(int leaderTerm, int leaderID, int prevLogIndex, int prevLogTerm, String entries,
 			int leaderCommit);
 	/*
 	 * Return current term if not vote for cand

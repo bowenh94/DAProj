@@ -71,7 +71,7 @@ public class DAClient extends JFrame {
 		while (true) {
 			// find the server who is playing in leader role
 			try {
-				Thread.sleep(5000);
+				Thread.sleep(2000);
 			} catch (InterruptedException e1) {
 				// TODO Auto-generated catch block
 				System.err.println("FUCKING sleep error ");
@@ -168,70 +168,6 @@ public class DAClient extends JFrame {
 	// end main
 	}
 
-
-				/*
-				 * not used any more, feel sad (Owen)
-				 * 
-				 * // get leader info while (true) { JSONObject query = new JSONObject();
-				 * query.put("command", "QUERY_LEADER"); out.writeUTF(query.toJSONString());
-				 * out.flush();
-				 * 
-				 * String resp = in.readLine(); JSONObject jsonObject = stringtoJSON(resp);
-				 * 
-				 * if ((boolean) jsonObject.get("respond")) { String ip = (String)
-				 * jsonObject.get("leader_ip"); int port = (int) jsonObject.get("leader_port");
-				 * try { leaderSocket = new Socket(ip, port);
-				 * System.err.println("Connect to Leader" + ip + ":" + port); break; } catch
-				 * (IOException e) { System.err.println("leader is fail!"); } } // there is no
-				 * leader currently, // waiting for a new election
-				 * Thread.sleep(REFRESH_INTERVAL); }
-				 * 
-				 * // Connect to leader successful! // Start to send client score and get leader
-				 * board leaderOut = new DataOutputStream(leaderSocket.getOutputStream());
-				 * leaderIn = new BufferedReader(new
-				 * InputStreamReader(leaderSocket.getInputStream())); JSONObject msg = new
-				 * JSONObject();
-				 * 
-				 * while (true) { Thread.sleep(REFRESH_INTERVAL);
-				 * 
-				 * // TODO: send msg to server msg.put("command", "SCORE_MSG"); msg.put("score",
-				 * client.board.getScore());
-				 * 
-				 * leaderOut.writeUTF(msg.toJSONString()); out.flush();
-				 * 
-				 * String resp = leaderIn.readLine(); JSONObject jsonResp = stringtoJSON(resp);
-				 * client.board.setLeaderBoard((HashMap<Integer, Integer>)
-				 * jsonResp.get("leader_board")); }
-				 */
-				/*
-			} finally {
-				try {
-					if (socket != null)
-						socket.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				try {
-					if (in != null)
-						in.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				try {
-					if (out != null) {
-						out.close();
-					}
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				/*
-				 * try { if (leaderSocket != null) { leaderSocket.close(); } } catch
-				 * (IOException e) { e.printStackTrace(); } try { if (leaderSocket != null) {
-				 * leaderSocket.close(); } } catch (IOException e) { e.printStackTrace(); } if
-				 * (leaderSocket != null) { try { leaderSocket.close(); } catch (IOException e)
-				 * { e.printStackTrace(); } } if (leaderSocket != null) { try {
-				 * leaderSocket.close(); } catch (IOException e) { e.printStackTrace(); } }
-				 */
 
 	public static JSONObject stringtoJSON(String msg) {
 		JSONParser jsonParser = new JSONParser();

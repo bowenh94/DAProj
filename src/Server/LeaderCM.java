@@ -1,6 +1,5 @@
 package Server;
 
-import java.awt.print.Printable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Timer;
@@ -46,22 +45,22 @@ public class LeaderCM extends ConsensusModule {
 
 			// generate an entry list: from lastMatching index to Last index
 			ArrayList<Entry> entryList = new ArrayList<Entry>();
-			for (int i = latestMatchingIndex[j]; i < currentLastIndex; i++) {
+			for (int i = latestMatchingIndex[j]; i <= currentLastIndex; i++) {
 				entryList.add(newServer.log.getEntry(i));
 			}
 			System.out.println("S" + newServer.serverId + " send hb to S" + j+", with log size of "+entryList.size());
 			Entry[] entries = new Entry[entryList.size()];
 			entries = entryList.toArray(entries);
-
+			String entriesString = newServer.entriestoString(entries);
 
 			remoteAppendEntries(j, newServer.currentTerm, newServer.serverId, latestMatchingIndex[j],
-					newServer.log.getEntry(latestMatchingIndex[j]).getTerm(), entries, cmLastCommitId);
+					newServer.log.getEntry(latestMatchingIndex[j]).getTerm(), entriesString, cmLastCommitId);
 		}
 		System.out.println("Leader " + newServer.serverId + " ENDENDEND to send HEARTBEAT");
 	}
 
 	@Override
-	public int appendEntries(int leaderTerm, int leaderID, int prevLogIndex, int prevLogTerm, Entry[] entries,
+	public int appendEntries(int leaderTerm, int leaderID, int prevLogIndex, int prevLogTerm, String entries,
 			int leaderCommit) {
 		synchronized (cmLock) {
 			int term = newServer.currentTerm;
@@ -139,6 +138,7 @@ public class LeaderCM extends ConsensusModule {
 				majorityCommitCounter = 0;
 				RPCResponse.clearAppendResp(newServer.currentTerm);
 				
+
 				// reset
 				RPCResponse.setTerm(newServer.currentTerm);
 				heartbeatTimer = scheduleTimer(HEARTBEAT_INTERVAL, TIMER_ID);

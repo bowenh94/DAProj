@@ -22,7 +22,7 @@ public class RPCImpl extends UnicastRemoteObject implements RPC {
 	}
 	
 	@Override
-	public int appendEntries(int leaderTerm, int leaderID, int prevLogIndex, int prevLogTerm, Entry[] entries,
+	public int appendEntries(int leaderTerm, int leaderID, int prevLogIndex, int prevLogTerm, String entries,
 			int leaderCommit) throws RemoteException {
 		// TODO Auto-generated method stub
 		return consensusModule.appendEntries(leaderTerm, leaderID, prevLogIndex, prevLogTerm, entries, leaderCommit);

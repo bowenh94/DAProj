@@ -18,7 +18,8 @@ public class Entry {
 	public int getCLientVal() {
 		return this.clientVal;
 	}
+	@Override
 	public String toString(){
-		return this.term+ ", "+this.clientID+", "+this.clientVal;
+		return this.term+ ","+this.clientID+","+this.clientVal+";";
 	}
 }

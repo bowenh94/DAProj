@@ -8,7 +8,7 @@ public interface RPC extends Remote {
 	// Invoke by leader, also used as hb
 	// hb send empty entries
 	// Return 0 if success, for leader to update itself, else return current term;
-	public int appendEntries(int leaderTerm, int leaderID, int prevLogIndex, int prevLogTerm, Entry[] entries,
+	public int appendEntries(int leaderTerm, int leaderID, int prevLogIndex, int prevLogTerm, String entries,
 			int leaderCommit) throws RemoteException;
 
 	// Invoke by candidate to gather vote

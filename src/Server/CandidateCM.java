@@ -49,7 +49,7 @@ public class CandidateCM extends ConsensusModule {
 	}
 
 	@Override
-	public int appendEntries(int leaderTerm, int leaderID, int prevLogIndex, int prevLogTerm, Entry[] entries,
+	public int appendEntries(int leaderTerm, int leaderID, int prevLogIndex, int prevLogTerm, String entries,
 			int leaderCommit) {
 		// if leaderTerm less than my current term, refuse and return my current
 		// term

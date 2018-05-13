@@ -171,6 +171,22 @@ public class newServer {
 		currentTerm = term;
 		return true;
 	}
+	public static Entry[] stringtoEntries(String esString) {
+		String[] esStrings = esString.split(";");
+		Entry[] entries = new Entry[esStrings.length];
+		for(int i=0;i<esStrings.length;i++){
+			String[] entry = esStrings[i].split(",");
+			entries[i] = new Entry(Integer.parseInt(entry[0]), Integer.parseInt(entry[1]), Integer.parseInt(entry[2]));
+		}
+		return entries;
+	}
+	public static String entriestoString(Entry[] entries){
+		String ans="";
+		for(Entry e:entries){
+			ans+=e.toString();
+		}
+		return ans;
+	}
 
 }
 
