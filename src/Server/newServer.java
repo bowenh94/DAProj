@@ -96,7 +96,7 @@ public class newServer {
 			}
 		}.start();
 		
-		
+		/*
 		// consensus module
 		RPCResponse.init(serverNum, currentTerm);
 		ConsensusModule.initCM(rmiPort, serverId);
@@ -111,7 +111,7 @@ public class newServer {
 			e.printStackTrace();
 		}
 		RPCImpl.startMode(new FollowerCM());
-	
+		*/
 	}
 
 	private static void readServerList() {

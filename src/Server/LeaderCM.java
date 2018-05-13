@@ -10,10 +10,21 @@ public class LeaderCM extends ConsensusModule {
 	// Timer id to distinguish two timer, they should have different approach to
 	// handle timeout
 	private int TIMER_ID = 1;
+	Integer[] appendEntryResponses;
+	private int majorityCommitCounter;
+	private int[] latestMatchingIndex;
+	private int currentLastIndex;
+
+	public LeaderCM() {
+		this.majorityCommitCounter = 0;
+		this.latestMatchingIndex = new int[newServer.serverNum];
+		this.currentLastIndex = newServer.log.getLastIndex();
+	}
 
 	@Override
 	protected void run() {
 		synchronized (cmLock) {
+			Arrays.fill(latestMatchingIndex, currentLastIndex);
 			sendHeartbeats();
 			// start heart-beat timer
 			heartbeatTimer = scheduleTimer(HEARTBEAT_INTERVAL, TIMER_ID);
@@ -21,72 +32,24 @@ public class LeaderCM extends ConsensusModule {
 	}
 
 	private void sendHeartbeats() {
-		System.out.println("Leader " + newServer.serverId+"."+newServer.currentTerm + " sending HEARTBEAT");
-		// repair other server logs to match leader log
-		repairLog();
-	}
-
-	private void repairLog() {
-		RPCResponse.setTerm(newServer.currentTerm);
+		System.out.println("Leader " + newServer.serverId + " starts to send HEARTBEAT");
 
 		// maintain last matching logs of leader and each server
-		int[] latestMatchingIndex = new int[newServer.serverNum];
 
-		// fill initially assuming all server logs are equal
-		// length to leader
-		Arrays.fill(latestMatchingIndex, newServer.log.getLastIndex());
-
-		int majorityCommitCounter = 0;
 		// iterate through servers
 		for (int j = 0; j < newServer.serverNum; j++) {
-			System.out.println("S"+newServer.serverId +"."+newServer.currentTerm + " send hb to S"+ j);
+			System.out.println("S" + newServer.serverId + " send hb to S" + j);
+
+			// generate an entry list: from lastMatching index to Last index
+			ArrayList<Entry> entryList = new ArrayList<Entry>();
+			for (int i = latestMatchingIndex[j]; i < currentLastIndex; i++) {
+				entryList.add(newServer.log.getEntry(i));
+			}
+			Entry[] entries = new Entry[entryList.size()];
+			entries = entryList.toArray(entries);
+
 			remoteAppendEntries(j, newServer.currentTerm, newServer.serverId, latestMatchingIndex[j],
 					newServer.log.getEntry(latestMatchingIndex[j]).getTerm(), null, cmLastCommitId);
-			/*
-			int response = -1;
-
-			while (response != 0) {
-				ArrayList<Entry> entryList = new ArrayList<Entry>();
-
-				for (int i = latestMatchingIndex[j]; i < newServer.log.getLastIndex(); i++) {
-					entryList.add(newServer.log.getEntry(i));
-				}
-				//System.out.println("entry length for fucking "+entryList.size());
-				
-				Entry[] entries = new Entry[entryList.size()];
-				entries = entryList.toArray(entries);
-				
-				
-				remoteAppendEntries(j, newServer.currentTerm, newServer.serverId, latestMatchingIndex[j],
-						newServer.log.getEntry(latestMatchingIndex[j]).getTerm(), entries, cmLastCommitId);
-				
-				// decrement log index and retry
-				latestMatchingIndex[j]--;
-
-				int[] responses = RPCResponse.getAppendEntryResp(newServer.currentTerm);
-				response = responses[j];
-				System.out.println("response from "+j+" is:"+response);
-			}
-			
-			if (latestMatchingIndex[j] >= cmLastCommitId) {
-				majorityCommitCounter++;
-			}*/
-		}
-		/*
-		try {
-			Thread.sleep(500);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}*/
-		int[] response = RPCResponse.getAppendEntryResp(newServer.currentTerm);
-		for(int j=0;j<newServer.serverNum;j++){
-			if (response[j] == 0) {
-				majorityCommitCounter++;
-			}
-		}
-		if (majorityCommitCounter > newServer.serverNum / 2) {
-			cmLastCommitId++;
 		}
 	}
 
@@ -96,6 +59,8 @@ public class LeaderCM extends ConsensusModule {
 		synchronized (cmLock) {
 			int term = newServer.currentTerm;
 
+			// Switch to follower mode if another leader has larger term than
+			// current leader
 			if (leaderTerm > term) {
 				heartbeatTimer.cancel();
 				newServer.votedFor = -1;
@@ -103,7 +68,7 @@ public class LeaderCM extends ConsensusModule {
 				return 0;
 			}
 
-			// get rpc from itself
+			// get remote call from itself
 			if (leaderID == newServer.serverId) {
 				System.out.println("Received HEARTBEAT from myself");
 				return 0;
@@ -122,7 +87,6 @@ public class LeaderCM extends ConsensusModule {
 			if (candidateTerm > term) {
 				heartbeatTimer.cancel();
 				newServer.votedFor = -1;
-				System.out.println("Leader "+newServer.serverId+"."+newServer.currentTerm + ": receive " +"S"+candidateID+"."+candidateTerm);
 				RPCImpl.startMode(new FollowerCM());
 				return 0;
 			}
@@ -135,8 +99,31 @@ public class LeaderCM extends ConsensusModule {
 		synchronized (cmLock) {
 			if (timerId == TIMER_ID) {
 				heartbeatTimer.cancel();
+
+				// deal with responses, and decide if commit or not
+				appendEntryResponses = RPCResponse.getAppendEntryResp(newServer.currentTerm);
+				for (int j = 0; j < newServer.serverNum; j++) {
+					if (appendEntryResponses[j] == 0) {
+						if(currentLastIndex > cmLastCommitId) {
+							majorityCommitCounter++;
+						}
+						latestMatchingIndex[j] = currentLastIndex;
+					} else if (appendEntryResponses[j] == -1){
+						if (latestMatchingIndex[j] > 0) {
+							latestMatchingIndex[j]--;
+						}
+					}
+				}
+				if (majorityCommitCounter > newServer.serverNum / 2) {
+					cmLastCommitId++;
+					majorityCommitCounter = 0;
+				}
+				RPCResponse.clearAppendResp(newServer.currentTerm);
+				
 				// reset
+				RPCResponse.setTerm(newServer.currentTerm);
 				heartbeatTimer = scheduleTimer(HEARTBEAT_INTERVAL, TIMER_ID);
+				currentLastIndex = newServer.log.getLastIndex();
 				sendHeartbeats();
 			}
 		}

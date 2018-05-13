@@ -52,7 +52,7 @@ public class FollowerCM extends ConsensusModule {
 			if (candidateTerm >= term && newServer.votedFor == -1 && lastLogIndex >= cmLastCommitId) {
 				System.out.println(
 						"Server " + newServer.serverId + "received vote request from server " + candidateID + " and vote");
-				newServer.setCurrentTerm(candidateTerm);
+				//newServer.setCurrentTerm(candidateTerm);
 				newServer.votedFor = candidateID;
 				return 0;
 			} else {
