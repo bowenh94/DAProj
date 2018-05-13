@@ -6,14 +6,14 @@ package Server;
  */
 public class RPCResponse {
 	// format of aER and vRR is list[serverId]=thisServerResp
-	private static int[] appendEntryResp;
+	private static Integer[] appendEntryResp;
 	private static int[] voteReqResp;
 	private static int cTerm;
 	
 	public static void init(int num_servers, int term) {
 		// TODO Auto-generated constructor stub
 		cTerm = term;
-		appendEntryResp = new int[num_servers];
+		appendEntryResp = new Integer[num_servers];
 		clearAppendResp(term);
 		voteReqResp = new int[num_servers];
 		clearVote(term);
@@ -35,7 +35,7 @@ public class RPCResponse {
 	public static boolean clearAppendResp(int term) {
 		if(term==cTerm){
 			for(int i=0;i<appendEntryResp.length;i++)
-				appendEntryResp[i] = -1;
+				appendEntryResp[i] = null;
 			return true;
 		}else
 			return false;
@@ -57,7 +57,7 @@ public class RPCResponse {
 			return false;
 	}
 	
-	public static int[] getAppendEntryResp(int term) {
+	public static Integer[] getAppendEntryResp(int term) {
 		if(term == cTerm)
 			return appendEntryResp;
 		else
