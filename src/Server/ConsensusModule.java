@@ -58,7 +58,8 @@ public abstract class ConsensusModule {
 						RPCResponse.setVote(serverID, response, candidateTerm);
 					}
 				} catch (Exception e) {
-					e.printStackTrace();
+					//e.printStackTrace();
+					System.out.println("FUCKING REMOTE EXCEPTION");
 				}
 			}
 		}.start();
@@ -75,15 +76,17 @@ public abstract class ConsensusModule {
 					Registry registry = LocateRegistry.getRegistry(newServer.initRmiPort+serverID);
 					RPC rpc = (RPC) registry.lookup(url);
 					
+					//System.out.println("FUCKING upper the line ");
 					int response = rpc.appendEntries(leaderTerm, leaderID, prevLogIndex, prevLogTerm, entries, leaderCommit);
-					
+					//System.out.println("FUCKING behind the line ");
 					//System.err.println("S"+ newServer.serverId + " Lookup at "+ newServer.initRmiPort+serverID + " for "+url +", Response is "+response);
 					synchronized (cmLock) {
 						RPCResponse.setAppendEntryResp(serverID, response, leaderTerm);
 					}
 				} catch (Exception e) {
 					// TODO: handle exception
-					e.printStackTrace();					
+					//e.printStackTrace();	
+					System.out.println("FUCKING REMOTE EXCEPTION");
 				}
 			}
 		}.start();

@@ -13,7 +13,6 @@ public class FollowerCM extends ConsensusModule {
 
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
 		synchronized (cmLock) {
 			newServer.mode = CmMode.FOLLOWER;
 			System.out.println("S" + newServer.serverId + "." + newServer.currentTerm + ": switched to follower mode.");
@@ -33,27 +32,26 @@ public class FollowerCM extends ConsensusModule {
 		synchronized (cmLock) {
 			System.out.println("S" + newServer.serverId + "." + newServer.currentTerm + " Leader term is " + leaderTerm
 					+ " with Entry of ");
-
 			this.resetTimeoutTimer();
 			int term = newServer.currentTerm;
 			if (leaderTerm >= term) {
 				newServer.setCurrentTerm(leaderTerm);
-				// newServer.votedFor = -1;
 			} else {
 				// condition 1: Reply false if leader term < currentTerm
 				return -1;
 			}
 
 			/*
-			 * condition 2: Reply false if log doesn¡¯t contain an entry at prevLogIndex
+			 * condition 2: Reply false if log does not contain an entry at prevLogIndex
 			 * whose term matches prevLogTerm
 			 */
+			
 			Entry entryAtIndex = newServer.log.getEntry(prevLogIndex);
 			if (entryAtIndex == null || entryAtIndex.getTerm() != prevLogTerm) {
 				return -1;
 			}
 
-			// TODO: please check condition 3 & 4 CAREFULLY. Fukcing too tired, need sleep (Owen)
+			// TODO: please check condition 3 & 4 CAREFULLY. Fucking tired, need sleep (Owen)
 			/*
 			 * condition 3: If an existing entry conflicts with a new one (same index but
 			 * different terms), delete the existing entry and all that follow it
