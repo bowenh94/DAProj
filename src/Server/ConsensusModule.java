@@ -73,7 +73,7 @@ public abstract class ConsensusModule {
 				String url = "S"+serverID;
 				//System.out.println(url);
 				try {
-					Registry registry = LocateRegistry.getRegistry(newServer.initRmiPort+serverID);
+					Registry registry = LocateRegistry.getRegistry(newServer.serverList.get(serverID),newServer.initRmiPort+serverID);
 					RPC rpc = (RPC) registry.lookup(url);
 					
 					//System.out.println("FUCKING upper the line ");
