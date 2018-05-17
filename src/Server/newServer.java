@@ -105,7 +105,7 @@ public class newServer {
 			RPCServer = new RPCImpl();
 			Registry registry = LocateRegistry.createRegistry(rmiPort);
 			registry.rebind(name, RPCServer);
-			System.out.println("S"+newServer.serverId + " bind " + name + " to port "+rmiPort);
+			System.out.println("Server "+newServer.serverId + " binds " + name + " to port "+rmiPort);
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

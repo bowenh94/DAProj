@@ -33,6 +33,13 @@ public class Board extends JPanel implements ActionListener {
     private final int DOT_SIZE = 10;
     private final int ALL_DOTS = 900;
     /**
+     * direction key 
+     */
+    private int UP = KeyEvent.VK_UP;
+    private int DOWN = KeyEvent.VK_DOWN;
+    private int LEFT = KeyEvent.VK_LEFT;
+    private int RIGHT = KeyEvent.VK_RIGHT;
+    /**
      * random position for apples 
      */
     private final int RAND_POS = 29;
@@ -67,6 +74,21 @@ public class Board extends JPanel implements ActionListener {
     private JSONObject leaderBoard;
     
     public Board() {
+        addKeyListener(new TAdapter());
+        setBackground(Color.WHITE);
+        setFocusable(true);
+
+        setPreferredSize(new Dimension(B_WIDTH, B_HEIGHT));
+        loadImages();
+        initGame();
+        leaderBoard = new JSONObject();
+    }
+    
+    public Board(int clientID) {
+    	this.UP = KeyEvent.VK_W;
+    	this.DOWN = KeyEvent.VK_S;
+    	this.LEFT = KeyEvent.VK_A;
+    	this.RIGHT = KeyEvent.VK_D;
         addKeyListener(new TAdapter());
         setBackground(Color.WHITE);
         setFocusable(true);
@@ -248,25 +270,25 @@ public class Board extends JPanel implements ActionListener {
 
             int key = e.getKeyCode();
 
-            if ((key == KeyEvent.VK_LEFT) && (!rightDirection)) {
+            if ((key == LEFT) && (!rightDirection)) {
                 leftDirection = true;
                 upDirection = false;
                 downDirection = false;
             }
 
-            if ((key == KeyEvent.VK_RIGHT) && (!leftDirection)) {
+            if ((key == RIGHT) && (!leftDirection)) {
                 rightDirection = true;
                 upDirection = false;
                 downDirection = false;
             }
 
-            if ((key == KeyEvent.VK_UP) && (!downDirection)) {
+            if ((key == UP) && (!downDirection)) {
                 upDirection = true;
                 rightDirection = false;
                 leftDirection = false;
             }
 
-            if ((key == KeyEvent.VK_DOWN) && (!upDirection)) {
+            if ((key == DOWN) && (!upDirection)) {
                 downDirection = true;
                 rightDirection = false;
                 leftDirection = false;

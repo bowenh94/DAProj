@@ -59,7 +59,7 @@ public abstract class ConsensusModule {
 					}
 				} catch (Exception e) {
 					//e.printStackTrace();
-					System.out.println("FUCKING REMOTE EXCEPTION");
+//					System.out.println("FUCKING REMOTE EXCEPTION");
 				}
 			}
 		}.start();
@@ -86,7 +86,7 @@ public abstract class ConsensusModule {
 				} catch (Exception e) {
 					// TODO: handle exception
 					//e.printStackTrace();	
-					System.out.println("FUCKING REMOTE EXCEPTION");
+//					System.out.println("FUCKING REMOTE EXCEPTION");
 				}
 			}
 		}.start();

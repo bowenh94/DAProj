@@ -8,12 +8,10 @@ public class Log {
 	public Log() {
 		// TODO Auto-generated constructor stub
 		this.linkedList = new LinkedList<>();
-		this.linkedList.add(new Entry(0, 0, 0));
+//		this.linkedList.add(new Entry(0, 0, 0));
 		/*
 		 * for test 
 		 */
-		this.linkedList.add(new Entry(1, 4, 90));
-		this.linkedList.add(new Entry(1, 6, 99));
 	}
 
 	public LinkedList<Entry> get() {

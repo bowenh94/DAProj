@@ -28,6 +28,7 @@ public class LeaderCM extends ConsensusModule {
 		synchronized (cmLock) {
 			newServer.mode = CmMode.LEADER;
 			Arrays.fill(latestMatchingIndex, currentLastIndex);
+			System.out.println("Server " + newServer.serverId + " now is in Leader mode with term " + newServer.currentTerm);
 			sendHeartbeats();
 			// start heart-beat timer
 			heartbeatTimer = scheduleTimer(HEARTBEAT_INTERVAL, TIMER_ID);
@@ -48,7 +49,7 @@ public class LeaderCM extends ConsensusModule {
 			for (int i = latestMatchingIndex[j]; i <= currentLastIndex; i++) {
 				entryList.add(newServer.log.getEntry(i));
 			}
-			System.out.println("S" + newServer.serverId + " send hb to S" + j+", with log size of "+entryList.size());
+			System.out.println("Leader " + newServer.serverId + " sending HEARTBEAT to Follower " + j+", with log size of "+entryList.size());
 			Entry[] entries = new Entry[entryList.size()];
 			entries = entryList.toArray(entries);
 			String entriesString = newServer.entriestoString(entries);
@@ -56,7 +57,7 @@ public class LeaderCM extends ConsensusModule {
 			remoteAppendEntries(j, newServer.currentTerm, newServer.serverId, latestMatchingIndex[j],
 					newServer.log.getEntry(latestMatchingIndex[j]).getTerm(), entriesString, cmLastCommitId);
 		}
-		System.out.println("Leader " + newServer.serverId + " ENDENDEND to send HEARTBEAT");
+		System.out.println("Leader " + newServer.serverId + " finished sending HEARTBEAT");
 	}
 
 	@Override
@@ -70,13 +71,14 @@ public class LeaderCM extends ConsensusModule {
 			if (leaderTerm > term) {
 				heartbeatTimer.cancel();
 				newServer.votedFor = -1;
+				System.out.println("Leader " + newServer.serverId + "receives LOG ENTRY with biiger term than its current term and becomes Follower");
 				RPCImpl.startMode(new FollowerCM());
 				return 0;
 			}
 
 			// get remote call from itself
 			if (leaderID == newServer.serverId) {
-				System.out.println("Received HEARTBEAT from myself");
+//				System.out.println("Received HEARTBEAT from myself");
 				return 0;
 			}
 
@@ -93,6 +95,7 @@ public class LeaderCM extends ConsensusModule {
 			if (candidateTerm > term) {
 				heartbeatTimer.cancel();
 				newServer.votedFor = -1;
+				System.out.println("Leader " + newServer.serverId + "receives VOTE REQUEST with biiger term than its current term and becomes Follower");
 				RPCImpl.startMode(new FollowerCM());
 				return 0;
 			}
@@ -109,16 +112,16 @@ public class LeaderCM extends ConsensusModule {
 				// deal with responses, and decide if commit or not
 				appendEntryResponses = RPCResponse.getAppendEntryResp(newServer.currentTerm);
 				
-				System.out.println("append entry responses:++++++++++++++++++++++++++++++++++++++++++++++++++");
-				for(int i:appendEntryResponses){
-					System.out.print(i+" ------------ ");
-				}
+				System.out.println("Leader " + newServer.serverId + " gets APPEND ENTIES RESPONSE:" + appendEntryResponses.toString());
+//				for(int i:appendEntryResponses){
+//					System.out.print(i+" ------------ ");
+//				}
 					
-				System.out.println("current last index:" + currentLastIndex);
+				System.out.println("Leader " + newServer.serverId + "'s current last index:" + currentLastIndex);
 				for (int j = 0; j < newServer.serverNum; j++) {
 					if (appendEntryResponses[j] == 0) {
 						if(currentLastIndex > cmLastCommitId) {
-							System.out.println("leader ---------- counter ++");
+//							System.out.println("Leader ---------- counter ++");
 							majorityCommitCounter++;
 						}
 						latestMatchingIndex[j] = currentLastIndex;
@@ -129,9 +132,10 @@ public class LeaderCM extends ConsensusModule {
 					}
 				}
 				
-				System.out.println("majority :" + majorityCommitCounter);
+				
 				if (majorityCommitCounter > newServer.serverNum / 2) {
-					System.out.println("___________ commit ++ ______________");
+					System.out.println("Leader " + newServer.serverId + " gets " + majorityCommitCounter + " commits from Followers");
+					System.out.println("Leader " + newServer.serverId + " commits a new entry");
 					cmLastCommitId++;
 				}
 				

@@ -15,7 +15,7 @@ public class FollowerCM extends ConsensusModule {
 	public void run() {
 		synchronized (cmLock) {
 			newServer.mode = CmMode.FOLLOWER;
-			System.out.println("S" + newServer.serverId + "." + newServer.currentTerm + ": switched to follower mode.");
+			System.out.println("Server " + newServer.serverId + " now is in Follower mode with term " + newServer.currentTerm);
 
 			// Create timer to detect missing leader
 			Random rand = new Random();
@@ -30,8 +30,7 @@ public class FollowerCM extends ConsensusModule {
 			int leaderCommit) {
 		// TODO Auto-generated method stub
 		synchronized (cmLock) {
-			System.out.println("S" + newServer.serverId + "." + newServer.currentTerm + " Leader term is " + leaderTerm
-					+ " with Entry of ");
+			System.out.println("Follower " + newServer.serverId + " has term " + newServer.currentTerm + " and receives LOG ENTRY from Leader " + leaderID + " with term " + leaderTerm);
 			this.resetTimeoutTimer();
 			int term = newServer.currentTerm;
 			if (leaderTerm >= term) {
@@ -59,6 +58,7 @@ public class FollowerCM extends ConsensusModule {
 
 			/* condition 4: Append any new entries not already in the log */
 			Entry[] newEntries = newServer.stringtoEntries(entries);
+			System.out.println("Follower " + newServer.serverId + " inserts LOG ENTRY");
 			newServer.log.insert(newEntries, prevLogIndex, prevLogTerm);
 			
 			/*
@@ -84,8 +84,8 @@ public class FollowerCM extends ConsensusModule {
 		synchronized (cmLock) {
 			int term = newServer.currentTerm;
 			if (candidateTerm >= term && newServer.votedFor == -1 && lastLogIndex >= cmLastCommitId) {
-				System.out.println("Server " + newServer.serverId + "received vote request from server " + candidateID
-						+ " and vote");
+				System.out.println("Follower " + newServer.serverId + " receives VOTE REQUEST from Candidate " + candidateID
+						+ " and votes for it");
 				// newServer.setCurrentTerm(candidateTerm);
 				newServer.votedFor = candidateID;
 				return 0;
@@ -104,7 +104,7 @@ public class FollowerCM extends ConsensusModule {
 		synchronized (cmLock) {
 			if (timerId == this.TIMEOUT_TIMER_ID) {
 				timeoutTimer.cancel();
-				System.out.println(newServer.serverId + " has not received heartbeat from leader");
+				System.out.println("Follower " + newServer.serverId + " has not received HEARTBEAT from Leader and becomes Candidate to start an election");
 				RPCImpl.startMode(new CandidateCM());
 			}
 		}

@@ -18,7 +18,7 @@ public class CandidateCM extends ConsensusModule {
 			// when become candidate, increment self current term by 1
 			newServer.currentTerm += 1;
 			// start new election
-			System.out.println("S" + newServer.serverId + " start election");
+			System.out.println("Server " + newServer.serverId + " now is in Candidate mode with term " + newServer.currentTerm);
 			this.startElection();
 		}
 	}
@@ -29,12 +29,10 @@ public class CandidateCM extends ConsensusModule {
 		RPCResponse.setTerm(term);
 		RPCResponse.clearVote(term);
 		Random random = new Random();
-		
-		//System.out.println("S"+newServer.serverId + " Random is "+ (random.nextInt(this.ELECTION_TIMEOUT_MAX - this.ELECTION_TIMEOUT_MIN) + this.ELECTION_TIMEOUT_MIN));
-
-		electionTimeoutTimer = scheduleTimer(
-				random.nextInt(this.ELECTION_TIMEOUT_MAX - this.ELECTION_TIMEOUT_MIN) + this.ELECTION_TIMEOUT_MIN,
-				TIMER_ID);
+		int electionTimeout = random.nextInt(this.ELECTION_TIMEOUT_MAX - this.ELECTION_TIMEOUT_MIN) + this.ELECTION_TIMEOUT_MIN;
+		electionTimeoutTimer = scheduleTimer(electionTimeout, TIMER_ID);
+		System.out.println("Candidate " + newServer.serverId + " starts an election with term " + newServer.currentTerm);
+		System.out.println("Candidate "+newServer.serverId + "'s election timeout is " + electionTimeout + "ms");
 
 		/*
 		 * this req voting should be parallized
@@ -58,6 +56,7 @@ public class CandidateCM extends ConsensusModule {
 			if (leaderTerm >= newServer.currentTerm) {
 				this.electionTimeoutTimer.cancel();
 				newServer.votedFor = -1;
+				System.out.println("Candidate " + newServer.serverId + " receives LOG ENTRY with bigger term than its current term, and stops election");
 				RPCImpl.startMode(new FollowerCM());
 				return 0;
 			}
@@ -84,13 +83,15 @@ public class CandidateCM extends ConsensusModule {
 			if (timerId == this.TIMER_ID) {
 				this.electionTimeoutTimer.cancel();
 				int[] vote = RPCResponse.getVoteResp(newServer.currentTerm);
+				System.out.println("Candidate " + newServer.serverId + " gets vote result:" + vote.toString());
 				int count = 0;
 				for (int i = 0; i < vote.length; i++) {
 					if (vote[i] == 0)
 						count++;
 				}
-				//System.err.println("S"+ newServer.serverId + " get vote "+ count +" at term "+newServer.currentTerm);
+//				System.err.println("S"+ newServer.serverId + " get vote "+ count +" at term "+newServer.currentTerm);
 				if (count > newServer.serverNum / 2) {
+					System.out.println("Candidate " + newServer.serverId + "gets " + count + " votes and becomes Leader with term " + newServer.currentTerm);
 					RPCImpl.startMode(new LeaderCM());
 				} else {
 					newServer.currentTerm += 1;

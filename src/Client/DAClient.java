@@ -40,11 +40,29 @@ public class DAClient extends JFrame {
 		setLocationRelativeTo(null);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
+	
+	public DAClient(int clientID) {
+		board = new Board(clientID);
+		add(board);
+
+		setResizable(false);
+		pack();
+
+		setTitle("Snake");
+		setLocationRelativeTo(null);
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	}
 
 	@SuppressWarnings("unchecked")
 	public static void main(String[] args) {
-		DAClient client = new DAClient();
 		clientID = Integer.parseInt(args[0]);
+		DAClient client;
+		if((clientID % 2) == 0) {
+			client = new DAClient();
+		}
+		else {
+			client = new DAClient(clientID);
+		}
 		EventQueue.invokeLater(new Runnable() {
 			@Override
 			public void run() {
