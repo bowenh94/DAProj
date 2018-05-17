@@ -24,11 +24,13 @@ public class StateMachine {
 		for (int i = 0; i <= lastCommitId; i++) {
 			Entry e = smlog.get(i);
 			int clientId = e.getClientID();
-			int clientVal = e.getCLientVal();
-			if (map.containsKey(clientId)) {
-				map.replace(clientId, clientVal);
-			} else {
-				map.put(clientId, clientVal);
+			if(clientId!=0){
+				int clientVal = e.getCLientVal();
+				if (map.containsKey(clientId)) {
+					map.replace(clientId, clientVal);
+				} else {
+					map.put(clientId, clientVal);
+				}
 			}
 		}
 		

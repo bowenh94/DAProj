@@ -10,6 +10,9 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.swing.JFrame;
 
 import org.json.simple.JSONObject;
@@ -27,7 +30,8 @@ public class DAClient extends JFrame {
 	static private String serverListPath = "src/configs/serverList.txt";
 	public static int clientID;
 	private static int REFRESH_INTERVAL = 100;
-
+	public static Map<Integer, String> serverList = new HashMap<Integer, String>();
+	public static int initPort = 8890;
 	public DAClient() {
 		board = new Board();
 		add(board);
@@ -78,7 +82,7 @@ public class DAClient extends JFrame {
 		 */
 
 		// read serverlist from file and store in serverlist
-		ArrayList<Pair<String, Integer>> serverList = readServerList();
+		readServerList();
 
 		while (true) {
 			// find the server who is playing in leader role
@@ -90,16 +94,16 @@ public class DAClient extends JFrame {
 				//e1.printStackTrace();
 			}
 			for (int i = 0; i < serverList.size(); i++) {
-				Pair<String, Integer> firstServer = serverList.get(i);
-				System.out.println("Connect to " + firstServer.getKey() + ":" + firstServer.getValue());
+				String firstServer = serverList.get(i);
+				System.out.println("Connect to " + firstServer + ":" + (initPort+i));
 
 				try {
-					socket = new Socket(firstServer.getKey(), firstServer.getValue());
+					socket = new Socket(firstServer, (initPort+i));
 				} catch (UnknownHostException e) {
 					e.printStackTrace();
 					continue;
 				} catch (IOException e) {
-					System.out.println("Server " + firstServer.getKey() + ":" + firstServer.getValue() + " is not alive!");
+					System.out.println("Server " + firstServer + ":" + (initPort+i) + " is not alive!");
 					continue;
 				}
 
@@ -118,7 +122,7 @@ public class DAClient extends JFrame {
 					resp = in.readUTF();
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
-					e.printStackTrace();
+					//e.printStackTrace();
 					continue;
 				}
 
@@ -135,7 +139,7 @@ public class DAClient extends JFrame {
 
 				} else {
 					// current server is not leader
-					System.out.println("Server " + firstServer.getKey() + ":" + firstServer.getValue() + " is not leader now. Reconnect to another server.");
+					System.out.println("Server " + firstServer + ":" + (initPort+i) + " is not leader now. Reconnect to another server.");
 					try {
 						socket.close();
 						out.close();
@@ -196,8 +200,7 @@ public class DAClient extends JFrame {
 	}
 
 	// Read server list from file and store in serverList
-	private static ArrayList<Pair<String, Integer>> readServerList() {
-		ArrayList<Pair<String, Integer>> serverList = new ArrayList<>();
+	private static void readServerList() {
 		File file = new File(serverListPath);
 		BufferedReader bReader;
 		String line;
@@ -205,9 +208,15 @@ public class DAClient extends JFrame {
 			bReader = new BufferedReader(new FileReader(file));
 			while ((line = bReader.readLine()) != null) {
 				System.out.println(line);
-				String[] nServer = line.split(":");
-				Pair<String, Integer> nPair = new Pair<String, Integer>(nServer[0], Integer.parseInt(nServer[1]));
-				serverList.add(nPair);
+				String[] inLine = line.split(",");
+				
+				int sID = Integer.parseInt(inLine[0]);
+				String[] nServer = inLine[1].split(":");
+				String ipAddress = nServer[0];
+				if(sID==0)
+					initPort = Integer.parseInt(nServer[1]);
+				
+				serverList.put(sID, ipAddress);
 			}
 			bReader.close();
 		} catch (NumberFormatException e) {
@@ -217,6 +226,5 @@ public class DAClient extends JFrame {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return serverList;
 	}
 }

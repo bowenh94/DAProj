@@ -49,7 +49,7 @@ public abstract class ConsensusModule {
 			public void run() {
 				String url = "S"+serverID;
 				try {
-					Registry registry = LocateRegistry.getRegistry(newServer.initRmiPort+serverID);
+					Registry registry = LocateRegistry.getRegistry(newServer.serverList.get(serverID),newServer.initRmiPort+serverID);
 					RPC rpc = (RPC) registry.lookup(url);
 					
 					int response = rpc.requestVote(candidateTerm, candidateID, lastLogIndex, lastLogTerm);

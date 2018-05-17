@@ -13,6 +13,8 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -54,7 +56,7 @@ public class newServer {
 
 	private static String configPath = "src/configs/init.config";
 	private static String serverListPath = "src/configs/serverList.txt";
-	private static ArrayList<Pair<String, Integer>> serverList = new ArrayList<>();
+	public static Map<Integer, String> serverList = new HashMap<Integer, String>();
 
 	public static void main(String[] args) {
 		if (args.length != 3) {
@@ -74,6 +76,7 @@ public class newServer {
 		stateMachine = new StateMachine();
 		// read file
 		readServerList();
+		System.out.println(serverList.toString());
 		readConfig();
 		
 		
@@ -123,10 +126,13 @@ public class newServer {
 			bReader = new BufferedReader(new FileReader(file));
 			while ((line = bReader.readLine()) != null) {
 //				System.out.println(line);
-				String[] nServer = line.split(":");
-				Pair<String, Integer> nPair = new Pair<String, Integer>(nServer[0], Integer.parseInt(nServer[1]));
-
-				serverList.add(nPair);
+				String[] inLine = line.split(",");
+				
+				int sID = Integer.parseInt(inLine[0]);
+				String[] nServer = inLine[1].split(":");
+				String ipAddress = nServer[0];
+				
+				serverList.put(sID, ipAddress);
 			}
 			bReader.close();
 		} catch (NumberFormatException e) {
