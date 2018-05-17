@@ -30,7 +30,7 @@ public class FollowerCM extends ConsensusModule {
 			int leaderCommit) {
 		// TODO Auto-generated method stub
 		synchronized (cmLock) {
-			System.out.println("Follower " + newServer.serverId + " has term " + newServer.currentTerm + " and receives LOG ENTRY from Leader " + leaderID + " with term " + leaderTerm);
+			System.out.println("Follower " + newServer.serverId + " receives LOG ENTRY from Leader " + leaderID + " with term " + leaderTerm);
 			this.resetTimeoutTimer();
 			int term = newServer.currentTerm;
 			if (leaderTerm >= term) {

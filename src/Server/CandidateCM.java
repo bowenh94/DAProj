@@ -83,7 +83,7 @@ public class CandidateCM extends ConsensusModule {
 			if (timerId == this.TIMER_ID) {
 				this.electionTimeoutTimer.cancel();
 				int[] vote = RPCResponse.getVoteResp(newServer.currentTerm);
-				System.out.println("Candidate " + newServer.serverId + " gets vote result:" + vote.toString());
+				System.out.println("Candidate " + newServer.serverId + " gets vote result:" + toString(vote));
 				int count = 0;
 				for (int i = 0; i < vote.length; i++) {
 					if (vote[i] == 0)
@@ -91,7 +91,7 @@ public class CandidateCM extends ConsensusModule {
 				}
 //				System.err.println("S"+ newServer.serverId + " get vote "+ count +" at term "+newServer.currentTerm);
 				if (count > newServer.serverNum / 2) {
-					System.out.println("Candidate " + newServer.serverId + "gets " + count + " votes and becomes Leader with term " + newServer.currentTerm);
+					System.out.println("Candidate " + newServer.serverId + " gets " + count + " votes and becomes Leader with term " + newServer.currentTerm);
 					RPCImpl.startMode(new LeaderCM());
 				} else {
 					newServer.currentTerm += 1;
@@ -102,4 +102,5 @@ public class CandidateCM extends ConsensusModule {
 
 	}
 
+	
 }

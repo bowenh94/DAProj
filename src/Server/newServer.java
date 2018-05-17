@@ -22,6 +22,7 @@ import org.json.simple.parser.JSONParser;
 import Server.newServer.CmMode;
 import javafx.util.Pair;
 
+@SuppressWarnings("restriction")
 public class newServer {
 	public static int serverId;
 	public static int initServerPort;
@@ -121,7 +122,7 @@ public class newServer {
 		try {
 			bReader = new BufferedReader(new FileReader(file));
 			while ((line = bReader.readLine()) != null) {
-				System.out.println(line);
+//				System.out.println(line);
 				String[] nServer = line.split(":");
 				Pair<String, Integer> nPair = new Pair<String, Integer>(nServer[0], Integer.parseInt(nServer[1]));
 
@@ -144,7 +145,7 @@ public class newServer {
 		try {
 			bReader = new BufferedReader(new FileReader(file));
 			while ((line = bReader.readLine()) != null) {
-				// System.out.println(line);
+				 System.out.println(line);
 
 				String[] nConfig = line.split("=");
 
@@ -202,7 +203,7 @@ class Handler implements Runnable {
 
 	@SuppressWarnings("unchecked")
 	public void run() {
-		System.out.println("new req comes in");
+//		System.out.println("new req comes in");
 		DataInputStream br = null;
 		DataOutputStream out = null;
 
@@ -216,7 +217,7 @@ class Handler implements Runnable {
 
 				pbi.unread(singlebyte);
 				msg = br.readUTF();
-				System.out.println("get message" + msg);
+//				System.out.println("get message" + msg);
 				request = stringtoJSON(msg);
 				
 				response = new JSONObject();
@@ -240,7 +241,7 @@ class Handler implements Runnable {
 					//JSONObject leaderBoard = newServer.stateMachine.executeLog(newServer.log, newServer.test, socket);
 					//newServer.test+=1;
 					
-					System.out.println("current length of log is "+newServer.log.getLastIndex()+ " !! last commit :"+ConsensusModule.cmLastCommitId+"------"+leaderBoard.toJSONString());
+					System.out.println("Leader " + newServer.serverId + "'s current length of log is "+newServer.log.getLastIndex()+ " and its last commited index is "+ConsensusModule.cmLastCommitId);
 					response.put("leader_board", leaderBoard.toJSONString());
 					out.writeUTF(response.toJSONString());
 					out.flush();

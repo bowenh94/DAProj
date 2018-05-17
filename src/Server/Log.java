@@ -8,7 +8,7 @@ public class Log {
 	public Log() {
 		// TODO Auto-generated constructor stub
 		this.linkedList = new LinkedList<>();
-//		this.linkedList.add(new Entry(0, 0, 0));
+		this.linkedList.add(new Entry(0, 0, 0));
 		/*
 		 * for test 
 		 */

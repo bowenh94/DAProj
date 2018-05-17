@@ -112,7 +112,7 @@ public class LeaderCM extends ConsensusModule {
 				// deal with responses, and decide if commit or not
 				appendEntryResponses = RPCResponse.getAppendEntryResp(newServer.currentTerm);
 				
-				System.out.println("Leader " + newServer.serverId + " gets APPEND ENTIES RESPONSE:" + appendEntryResponses.toString());
+				System.out.println("Leader " + newServer.serverId + " gets APPEND ENTIES RESPONSE:" + toString(appendEntryResponses));
 //				for(int i:appendEntryResponses){
 //					System.out.print(i+" ------------ ");
 //				}

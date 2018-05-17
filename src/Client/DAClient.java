@@ -10,8 +10,6 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.HashMap;
-
 import javax.swing.JFrame;
 
 import org.json.simple.JSONObject;
@@ -19,6 +17,7 @@ import org.json.simple.parser.JSONParser;
 
 import javafx.util.Pair;
 
+@SuppressWarnings("restriction")
 public class DAClient extends JFrame {
 	/**
 	 * 
@@ -27,42 +26,37 @@ public class DAClient extends JFrame {
 	private Board board;
 	static private String serverListPath = "src/configs/serverList.txt";
 	public static int clientID;
-	private static int REFRESH_INTERVAL = 1;
+	private static int REFRESH_INTERVAL = 100;
 
 	public DAClient() {
 		board = new Board();
 		add(board);
-
+		
 		setResizable(false);
 		pack();
 
-		setTitle("Snake");
+		setTitle("Snake-Client" + clientID);
 		setLocationRelativeTo(null);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 	
-	public DAClient(int clientID) {
-		board = new Board(clientID);
-		add(board);
-
-		setResizable(false);
-		pack();
-
-		setTitle("Snake");
-		setLocationRelativeTo(null);
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	}
+//	public DAClient(int clientID) {
+//		board = new Board(clientID);
+//		add(board);
+//
+//		setResizable(false);
+//		pack();
+//
+//		setTitle("Snake");
+//		setLocationRelativeTo(null);
+//		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//	}
 
 	@SuppressWarnings("unchecked")
 	public static void main(String[] args) {
 		clientID = Integer.parseInt(args[0]);
 		DAClient client;
-		if((clientID % 2) == 0) {
-			client = new DAClient();
-		}
-		else {
-			client = new DAClient(clientID);
-		}
+		client = new DAClient();
 		EventQueue.invokeLater(new Runnable() {
 			@Override
 			public void run() {
@@ -138,7 +132,7 @@ public class DAClient extends JFrame {
 					System.out.println(leaderboard.toJSONString());
 					
 					client.board.setLeaderBoard(leaderboard);
-					
+
 				} else {
 					// current server is not leader
 					System.out.println("Server " + firstServer.getKey() + ":" + firstServer.getValue() + " is not leader now. Reconnect to another server.");

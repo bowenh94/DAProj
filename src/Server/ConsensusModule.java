@@ -92,6 +92,22 @@ public abstract class ConsensusModule {
 		}.start();
 		
 	}
+	
+	protected final String toString(int[] array) {
+		String result = "";
+		for(int element : array) {
+			result = result + String.valueOf(element);
+		}
+		return result;
+	}
+	
+	protected final String toString(Integer[] array) {
+		String result = "";
+		for(Integer element : array) {
+			result = result + element.toString();
+		}
+		return result;
+	}
 
 	
 	/*

@@ -19,3 +19,7 @@ echo "Rmi port start from $INIT_RMI_PORT"
 
 echo "Start Simulation"
 java -jar DemoServer.jar 0 "$INIT_SERVER_PORT" "$INIT_RMI_PORT" & java -jar DemoServer.jar 1 "$INIT_SERVER_PORT" "$INIT_RMI_PORT" & java -jar DemoServer.jar 2 "$INIT_SERVER_PORT" "$INIT_RMI_PORT"
+
+osascript -e 'tell app "Terminal"
+    do script "java -jar DemoServer.jar 0 "$INIT_SERVER_PORT" "$INIT_RMI_PORT""
+end tell'
