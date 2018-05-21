@@ -1,4 +1,4 @@
-# DAProj
+# Raft_Distributed_Algorithm
 An JAVA implementation of Raft algoritm. Include a Snake game client for testing.
 # Usage
 ## Following two files in src/configs/ provide the configurations for cluster.
